@@ -9,6 +9,9 @@ Android compiles and targets **Android 17 / API 37**, with **minSdk 26**.
 
 ## Create a project
 
+Full checklist (generate, make it the product, build features, test, release):
+[docs/NEW_PROJECT.md](docs/NEW_PROJECT.md); AgentsHub skill `cmp-project`.
+
 From this template directory:
 
 ```bash
