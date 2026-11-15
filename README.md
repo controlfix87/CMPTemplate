@@ -223,6 +223,6 @@ macOS. Debug builds run without credentials. Release builds sign when the Gradle
 `controlfix.signing.cmptemplate` (in `~/.gradle/gradle.properties` of the build machine) points to a
 `keystore.properties` in the private assets repo; otherwise they are unsigned. Never commit a key.
 
-See [implementation tasks](TASKS.md), [lessons from LockdownControl and GameController](docs/INSIGHTS.md),
+See [the prompt for a new CMP app](docs/CMP-APP-PROMPT.md), [implementation tasks](TASKS.md), [lessons from LockdownControl and GameController](docs/INSIGHTS.md),
 [testing](docs/TESTING.md),
 [validation](docs/VALIDATION.md), and the workspace [project plans](../MODERNIZATION.md).
