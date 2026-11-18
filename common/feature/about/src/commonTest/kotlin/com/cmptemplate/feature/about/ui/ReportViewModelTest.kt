@@ -100,7 +100,7 @@ class ReportViewModelTest {
         vm.state.test {
             vm.onAction(ReportAction.Title("T")); vm.onAction(ReportAction.Message("M")); vm.onAction(ReportAction.Send)
             assertEquals(ReportStatus.Failed(SendFailure.OFFLINE), expectMostRecentItem().status)
-            assertTrue(vm.mailUri().startsWith("mailto:support@controlfix.net"))
+            assertTrue(vm.mailUri().startsWith("mailto:bugreport@controlfix.net"))
             vm.onAction(ReportAction.Message("M2"))
             assertEquals(ReportStatus.Editing, expectMostRecentItem().status)
         }

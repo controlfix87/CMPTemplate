@@ -11,7 +11,7 @@ class SupportMailTest {
 
     @Test fun `addresses support with an encoded subject, the message and device details`() {
         val uri = SupportMail.uri(ReportDraft(ReportKind.BUG, "It broke & stopped", "Steps: 1 2"), app, DeviceInfo(model = "P1", os = "Android 17", api = "37"))
-        assertTrue(uri.startsWith("mailto:support@controlfix.net?subject="))
+        assertTrue(uri.startsWith("mailto:bugreport@controlfix.net?subject="))
         assertContains(uri, "%5BExample%5D%20Bug%3A%20It%20broke%20%26%20stopped")
         assertContains(uri, "Steps%3A%201%202")
         assertContains(uri, "API%2037")

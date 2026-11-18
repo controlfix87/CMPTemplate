@@ -32,7 +32,7 @@ by this migration update.
 | TPL-017 | done (source) / validation pending | Compose Multiplatform template renamed to **CMPTemplate** (packages, plugin ids `cmptemplate.kmp.*` / `cmptemplate.cmp.*`, generator, docs); desktop (JVM) target in every library/UI module and a `desktopApp` host |
 | TPL-018 | done (source) / validation pending | Roborazzi screenshot tests: Android (Robolectric, phone + Fold) and desktop |
 | TPL-019 | done (source) / validation pending | ControlFix branding (palette, Exo 2, mark, wordmark), light/dark/system theme with bar icons following the app theme, shared components |
-| TPL-020 | done (source) / validation pending | `feature:about`: branded About and report/suggestion screen to reports.controlfix.net, e-mail fallback to support@controlfix.net, redaction, crash recorder (Android/desktop), tests |
+| TPL-020 | done (source) / validation pending | `feature:about`: branded About and report/suggestion screen to reports.controlfix.net, e-mail fallback to bugreport@controlfix.net, redaction, crash recorder (Android/desktop), tests |
 | TPL-021 | done (source) / validation pending | Optional `feature:onboarding` (language + theme cards, step bar, skip, saved step, run again); `--without-onboarding` generator flag |
 | TPL-022 | done (source) / validation pending | Generator `common/` allowlist and boundary-checker fixes (T0021 note), `docs/INSIGHTS.md` |
 

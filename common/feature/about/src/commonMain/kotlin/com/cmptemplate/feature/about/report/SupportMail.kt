@@ -13,7 +13,7 @@ import io.ktor.http.encodeURLParameter
 object SupportMail {
     private const val MAX_BODY = 1500
 
-    fun uri(draft: ReportDraft, app: AppInfo, device: DeviceInfo, address: String = ControlFixLinks.SUPPORT_EMAIL): String {
+    fun uri(draft: ReportDraft, app: AppInfo, device: DeviceInfo, address: String = ControlFixLinks.BUG_REPORT_EMAIL): String {
         val label = when (draft.kind) {
             ReportKind.CRASH -> "Crash"
             ReportKind.BUG -> "Bug"

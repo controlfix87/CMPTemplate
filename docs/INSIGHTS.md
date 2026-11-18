@@ -14,7 +14,7 @@ shipped. What they learned is applied here; keep it when you replace the sample.
 | Robolectric screenshot tests use a plain `Application` and start/stop Koin per test; the real Application starts Koin itself and Robolectric creates one per test. `setContent` runs once per test: change state to shoot several steps. | GameController | `ScreenshotTest` |
 | Device tests break when onboarding is added: skip it first. | GameController ("Device tests: onboarding skip") | `RestorationTest.skipOnboarding` |
 | One shared reports service for every ControlFix app, ticket per app id, logs redacted on the device, logs only with a consent box (on by default), device details always, crash recorder installed first, crash cleared only after a successful send. | GameController | `feature:about` (`HttpReportSender`, `Redactor`, `CrashRecorder`) |
-| When the service is unreachable the user still needs a way out: e-mail to support. | owner (support@controlfix.net) | `SupportMail`, "Send by e-mail instead" |
+| When the service is unreachable the user still needs a way out: e-mail to support. | owner (bugreport@controlfix.net) | `SupportMail`, "Send by e-mail instead" |
 | An in-app light/dark choice means the status-bar icons must follow the app's theme, not the phone's, or they vanish. | LockdownControl | `SystemBarsEffect` in `CMPTemplateTheme` |
 | System back walks back through onboarding steps (`BackHandler`, Compose Multiplatform `ui-backhandler`). | LockdownControl | `OnboardingScreen` |
 | Device tests must wait for the first screen: the app draws nothing until the settings are read. | this template | `RestorationTest.skipOnboarding` |

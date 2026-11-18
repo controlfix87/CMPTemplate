@@ -162,7 +162,7 @@ fun ReportScreen(
             }
         }
         if (noMailApp) {
-            Text(stringResource(Res.string.report_no_mail, ControlFixLinks.SUPPORT_EMAIL), w, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(Res.string.report_no_mail, ControlFixLinks.BUG_REPORT_EMAIL), w, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

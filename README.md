@@ -89,7 +89,7 @@ screen. Reports go to the shared ControlFix reports service on Cloudflare,
 `~/data/tickets/<app id>/` (debug builds use the `.debug` id). Device details always go; the redacted
 recent log and last crash only with the "Attach app logs" box (on by default). When the service
 cannot be reached, refuses the report or rate-limits it (10 per hour), the screen offers **Send by
-e-mail instead**: a `mailto:support@controlfix.net` with subject, message and device details. No
+e-mail instead**: a `mailto:bugreport@controlfix.net` with subject, message and device details. No
 secret is in the app; the endpoint is public by design. `CrashRecorder.install()` runs first in
 `Application.onCreate` (Android) and `main()` (desktop); iOS sends device details only.
 
