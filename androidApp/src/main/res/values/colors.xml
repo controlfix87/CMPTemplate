@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash colours = the app's light background/primary (BrandColors.Paper, LimeOnLight), so the
+         hand-off from splash to the first Compose frame has no colour jump. values-night has the dark pair. -->
+    <color name="splash_background">#FFE9F2F7</color>
+    <color name="splash_icon">#FF5B8A00</color>
+</resources>

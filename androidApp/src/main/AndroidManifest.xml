@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.CMPTemplate">
-        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+        <!-- Starts on the splash theme; installSplashScreen() switches to postSplashScreenTheme. -->
+        <activity android:name=".MainActivity" android:exported="true" android:theme="@style/Theme.CMPTemplate.Starting" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

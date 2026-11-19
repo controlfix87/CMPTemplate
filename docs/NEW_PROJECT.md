@@ -27,6 +27,7 @@ python3 scripts/new_project.py --name MyApp --package net.controlfix.myapp --des
 | About line | `about_body` in all four languages |
 | Privacy policy link | `ControlFixLinks.PRIVACY` (`common/feature/about/.../Links.kt`); stores require a real page |
 | App mark and launcher icon | Replace `AppMark` (drawn in code) and `androidApp/src/main/res/drawable/ic_launcher_*`; keep the mark inside the launcher safe zone |
+| Splash screen | Official SplashScreen API (`core-splashscreen`): replace the placeholder `androidApp/src/main/res/drawable/ic_splash_icon.xml` (mark inside the centre 192dp of 288dp) and, only if the brand differs, `splash_background`/`splash_icon` in `res/values{,-night}/colors.xml`. No splash Activity, no timed delay |
 | Wordmark accent | `Wordmark(name, highlight = "Control")`-style highlight of part of the name, if the brand has one |
 | Onboarding product step | `OnboardingStep.APP` + `AppStep()`; only what the app cannot work without (permission, account, first choice) |
 | Desktop identity | `desktopApp`: `AppInfo` id = the Android package, window title, `packageName`/`packageVersion` |

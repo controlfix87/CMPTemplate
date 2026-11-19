@@ -1,6 +1,7 @@
 package com.cmptemplate.app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -63,18 +64,25 @@ private val navigationState = SavedStateConfiguration {
 /** The app's home destination. Replace with the first real feature's root route. */
 private val Home: NavKey = ExampleRoute.List
 
+/**
+ * @param onFirstScreenReady called once the settings are read and the real first screen is composed.
+ * Android uses it to release the system splash screen (MainActivity); other hosts can ignore it.
+ */
 @Composable
-fun App() {
+fun App(onFirstScreenReady: () -> Unit = {}) {
     val localeManager: LocaleManager = koinInject()
     val appViewModel: AppViewModel = koinViewModel()
     val locale by localeManager.locale.collectAsStateWithLifecycle()
     val appState by appViewModel.state.collectAsStateWithLifecycle()
-    // One DataStore read at start; until then draw only the background, never a guessed screen.
+    // One DataStore read at start; until then draw only the background, never a guessed screen
+    // (on Android the system splash covers this; desktop and iOS see the plain background).
     val ready = appState as? AppUiState.Ready
     if (ready == null) {
         CMPTemplateTheme { Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) }
         return
     }
+    // Runs after this composition is applied and before it is drawn; repeat calls are harmless.
+    SideEffect { onFirstScreenReady() }
 
     CMPTemplateTheme(darkTheme = ready.theme.isDark()) {
         // The back stack and the entry decorators are hoisted ABOVE AppLocaleProvider deliberately.

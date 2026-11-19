@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark splash = BrandColors.Ink background, Lime mark (the app's dark background/primary). -->
+    <color name="splash_background">#FF070C17</color>
+    <color name="splash_icon">#FFA9F000</color>
+</resources>

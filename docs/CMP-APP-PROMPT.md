@@ -145,7 +145,7 @@ XML in `docs/VALIDATION.md`; never report an unavailable task as green.
 - Reports and crashes go to the shared reports service (`feature:about`), redacted on the device,
   with the e-mail fallback. Ads, analytics, Crashlytics, billing, auth and databases are added only
   when the product needs them (see INSIGHTS "Not applied").
-- Replace `AppMark`, the launcher icon and `about_body` with the product's own.
+- Replace `AppMark`, the launcher icon, the splash icon (`ic_splash_icon`) and `about_body` with the product's own.
 
 ## Done means
 

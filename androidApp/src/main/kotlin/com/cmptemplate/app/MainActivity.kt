@@ -6,9 +6,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.cmptemplate.core.designsystem.i18n.AndroidAppLocale
 
 class MainActivity : ComponentActivity() {
+
+    /** False until [App] draws its first real screen; holds the system splash until then. */
+    private var firstScreenReady = false
 
     /**
      * Forces this Activity's resources onto the chosen language, so `resources.getString`, date and
@@ -42,8 +46,15 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Official SplashScreen API: must run before super.onCreate(); swaps the launch theme
+        // (Theme.CMPTemplate.Starting) for postSplashScreenTheme.
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        // Keep the splash up while the settings (theme, onboarding) are read, so the first frame is
+        // the right screen in the right theme, not an empty background. Checked before every frame
+        // on the main thread, so a plain field is enough. Never hold it for network or other slow work.
+        splashScreen.setKeepOnScreenCondition { !firstScreenReady }
         enableEdgeToEdge()
-        setContent { App() }
+        setContent { App(onFirstScreenReady = { firstScreenReady = true }) }
     }
 }

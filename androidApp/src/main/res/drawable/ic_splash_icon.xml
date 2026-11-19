@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PLACEHOLDER splash icon: replace with the product's mark.
+     Splash icon rules (no icon background): 288dp canvas, mark inside the centre 192dp circle (the
+     system masks the rest). This draws the launcher's 108dp foreground scaled to 288dp, so anything
+     inside the launcher safe zone stays inside the splash mask. Colour comes from @color/splash_icon
+     so it contrasts with the light and dark splash backgrounds. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="@color/splash_icon"
+        android:pathData="M32,30h12v20l20,-20h16L56,54l24,24H64L44,58v20H32z" />
+</vector>

@@ -3,4 +3,15 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
+
+    <!-- Launch theme for the official SplashScreen API (androidx.core:core-splashscreen): the same
+         system splash on every API level from minSdk up. MainActivity calls installSplashScreen()
+         before super.onCreate(), which swaps to postSplashScreenTheme. Never build a separate splash
+         Activity or a timed delay; the splash stays only while the first settings read runs. -->
+    <style name="Theme.CMPTemplate.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- PLACEHOLDER: replace drawable/ic_splash_icon with the product's mark. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.CMPTemplate</item>
+    </style>
 </resources>

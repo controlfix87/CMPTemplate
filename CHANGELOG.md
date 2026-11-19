@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Android splash on the official SplashScreen API (`core-splashscreen` 1.2.0): `Theme.CMPTemplate.Starting`, placeholder `ic_splash_icon`, light/dark brand colours, held only until the first settings read (`App(onFirstScreenReady)`) (T1078)
 - CMPTemplate: Compose Multiplatform (Android, iOS, desktop), Roborazzi screenshots, ControlFix branding, About + reports to reports.controlfix.net with e-mail fallback, optional onboarding, DataStore settings, ViewModel-owned state; repo and folder renamed to CMPTemplate (T0978)
 
 ### Fixed
