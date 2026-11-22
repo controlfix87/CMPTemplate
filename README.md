@@ -3,7 +3,7 @@
 Compose Multiplatform starter for **Android, iOS and desktop**: one shared Compose UI (screens,
 strings, fonts, icons, theme all in `commonMain`), Navigation 3, Koin, state restoration, tested
 networking, Roborazzi screenshot tests and repeatable project generation. It ships the ControlFix
-branding, an About screen, an in-app report/suggestion screen wired to the ControlFix reports
+branding, a Settings screen with About and an in-app "Suggest an idea / Report a bug" popup wired to the ControlFix reports
 service, and an optional first-run onboarding.
 Android compiles and targets **Android 17 / API 37**, with **minSdk 26**.
 
@@ -56,7 +56,7 @@ no database plugin or schema is imposed on a new app before it needs persistence
 | `common:core:datastore` | Jetpack DataStore (Preferences) on Android/iOS/desktop: `UserPreferencesRepository` (theme, onboarding done) as a `Flow`, corrupt-file recovery, in-memory fake |
 | `common:core:network` | HTTPS Ktor client, timeouts, redacted optional logging, OkHttp/Darwin engines |
 | `common:feature:example` | Repository seam, offline demo, tested HTTP adapter, MVI list/search and detail entries |
-| `common:feature:about` | Branded About, report/suggestion screen, `HttpReportSender`, `Redactor`, e-mail fallback, crash recorder + diagnostics per platform |
+| `common:feature:about` | Settings with the feedback menu and About sheet, two-state feedback popup, `HttpReportSender`, `Redactor`, e-mail fallback, crash recorder + diagnostics per platform |
 | `common:feature:onboarding` | **Optional** first-run setup: language + theme, a product step, done |
 | `common:sharedApp` | Shared navigation, serializable keys and production Koin module list; iOS framework |
 | `androidApp` | Android Application/Activity, edge-to-edge, release signing, Robolectric screenshots, device tests |
@@ -81,15 +81,19 @@ replace it, the Android launcher icon and `about_body` with the product's own.
 
 ## About, reports and suggestions
 
-`feature:about` is the About screen (mark, name, version, "Made by ControlFix", website, privacy,
-support e-mail, report a problem, send a suggestion, language, theme, run setup again) and the report
-screen. Reports go to the shared ControlFix reports service on Cloudflare,
+`feature:about` is the Settings screen (language, theme, run setup again). Its action bar holds the
+feedback menu, "Suggest an idea" (lightbulb, brand colour) or "Report a bug" (bug, red), each opening
+one popup in its own design, and the "i" that opens About as a bottom sheet (mark, name, version,
+`about_body`, privacy, "By" ControlFix, website and support e-mail). This follows the AgentsHub
+`feedback-report` skill. Reports go to the shared ControlFix reports service on Cloudflare,
 `POST https://reports.controlfix.net/v1/reports` (contract: AgentsHub `tools/reports/README.md`), with
 `x-report-app` = the Android package / iOS bundle id. Tickets land on the Orange Pi under
 `~/data/tickets/<app id>/` (debug builds use the `.debug` id). Device details always go; the redacted
-recent log and last crash only with the "Attach app logs" box (on by default). When the service
-cannot be reached, refuses the report or rate-limits it (10 per hour), the screen offers **Send by
-e-mail instead**: a `mailto:bugreport@controlfix.net` with subject, message and device details. No
+recent log and last crash only with a bug report whose "Also attach app logs" box the user ticked
+(off by default; a suggestion never carries logs). The popup closes on Send and a snackbar shows
+"Sending...", then the ticket or "too many reports" (10 per hour). When the service cannot be reached
+or refuses the report, the mail app opens with a `mailto:bugreport@controlfix.net` holding subject,
+message and device details. No
 secret is in the app; the endpoint is public by design. `CrashRecorder.install()` runs first in
 `Application.onCreate` (Android) and `main()` (desktop); iOS sends device details only.
 

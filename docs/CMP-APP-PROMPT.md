@@ -80,8 +80,9 @@ Use it before hand-written adb/Gradle work:
   `values-he/` only (`values-iw/` is generated). Use start/end, never left/right.
 - `contentDescription` on icons that carry meaning, touch targets >= 48dp, a `testTag` on every
   control a test or automation touches, stable keys in lazy lists, previews for screens.
-- About (mark, version, "Made by ControlFix", website, privacy, report a problem, suggestion,
-  language, theme, run setup again) and the report screen stay; set `ControlFixLinks.PRIVACY` and
+- Settings (language, theme, run setup again) with the feedback menu (Suggest an idea / Report a
+  bug, one two-state popup, log consent off) and the About sheet in its action bar stay (AgentsHub
+  `feedback-report` skill); set `ControlFixLinks.PRIVACY` and
   `about_body` before release. Optional onboarding: language and theme first, step bar, Skip on
   every step but the last, the step survives rotation, language change and process death.
 

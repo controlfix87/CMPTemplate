@@ -26,8 +26,10 @@ class HttpReportSender(
 ) : ReportSender {
 
     override suspend fun send(draft: ReportDraft): ReportResult {
-        val crash = if (draft.includeLogs || draft.kind == ReportKind.CRASH) diagnostics.lastCrash() else null
-        val log = if (draft.includeLogs) diagnostics.recentLog() else null
+        // Logs and the last crash leave the device only with consent, and only with a bug report.
+        val withLogs = draft.includeLogs && draft.kind == ReportKind.BUG
+        val crash = if (withLogs) diagnostics.lastCrash() else null
+        val log = if (withLogs) diagnostics.recentLog() else null
         val payload = ReportPayload(
             kind = draft.kind.wire,
             title = draft.title.trim().take(ReportSender.TITLE_MAX),

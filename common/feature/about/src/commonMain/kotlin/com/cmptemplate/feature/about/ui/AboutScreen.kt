@@ -2,25 +2,30 @@ package com.cmptemplate.feature.about.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -30,144 +35,134 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cmptemplate.core.model.ThemeMode
 import com.cmptemplate.core.designsystem.components.AppIcons
-import com.cmptemplate.core.designsystem.components.AppMark
+import com.cmptemplate.core.designsystem.components.ContentMaxWidth
 import com.cmptemplate.core.designsystem.components.LanguageChoices
 import com.cmptemplate.core.designsystem.components.ScreenHeader
 import com.cmptemplate.core.designsystem.components.SectionCard
-import com.cmptemplate.core.designsystem.components.SectionLabel
 import com.cmptemplate.core.designsystem.components.ThemeChoices
-import com.cmptemplate.core.designsystem.components.Wordmark
 import com.cmptemplate.core.designsystem.components.brandOutlinedButtonColors
 import com.cmptemplate.core.designsystem.generated.resources.Res
-import com.cmptemplate.core.designsystem.generated.resources.about_body
-import com.cmptemplate.core.designsystem.generated.resources.about_feedback
-import com.cmptemplate.core.designsystem.generated.resources.about_made_by
-import com.cmptemplate.core.designsystem.generated.resources.about_privacy
-import com.cmptemplate.core.designsystem.generated.resources.about_report
 import com.cmptemplate.core.designsystem.generated.resources.about_run_setup
 import com.cmptemplate.core.designsystem.generated.resources.about_settings
-import com.cmptemplate.core.designsystem.generated.resources.about_suggest
-import com.cmptemplate.core.designsystem.generated.resources.about_support
 import com.cmptemplate.core.designsystem.generated.resources.about_title
-import com.cmptemplate.core.designsystem.generated.resources.about_version
-import com.cmptemplate.core.designsystem.generated.resources.about_website
-import com.cmptemplate.core.designsystem.generated.resources.app_name
 import com.cmptemplate.core.designsystem.generated.resources.common_back
-import com.cmptemplate.core.designsystem.generated.resources.report_no_mail
+import com.cmptemplate.core.designsystem.generated.resources.feedback_no_mail_app
+import com.cmptemplate.core.designsystem.generated.resources.feedback_rate_limited
+import com.cmptemplate.core.designsystem.generated.resources.feedback_sending
+import com.cmptemplate.core.designsystem.generated.resources.feedback_sent
+import com.cmptemplate.core.designsystem.generated.resources.feedback_sent_id
 import com.cmptemplate.core.designsystem.i18n.AppLocale
 import com.cmptemplate.core.model.AppInfo
+import com.cmptemplate.core.model.ThemeMode
 import com.cmptemplate.feature.about.ControlFixLinks
-import com.cmptemplate.feature.about.report.ReportKind
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/** Wires the ViewModel; [AboutScreen] itself is state in, callbacks out (and screenshot-testable). */
+/** Wires the ViewModels; [AboutScreen] itself is state in, callbacks out (and screenshot-testable). */
 @Composable
 fun AboutRoot(
     onBack: (() -> Unit)?,
-    onReport: (ReportKind) -> Unit,
     onRunSetupAgain: (() -> Unit)?,
     viewModel: AboutViewModel = koinViewModel(),
+    feedbackViewModel: FeedbackViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val feedback by feedbackViewModel.state.collectAsStateWithLifecycle()
     AboutScreen(
         app = state.app,
         locale = state.locale,
         theme = state.theme,
+        feedback = feedback,
         onLocale = { viewModel.onAction(AboutAction.SetLocale(it)) },
         onTheme = { viewModel.onAction(AboutAction.SetTheme(it)) },
+        onFeedback = feedbackViewModel::onAction,
         onBack = onBack,
-        onReport = onReport,
         onRunSetupAgain = onRunSetupAgain?.let { navigate -> { viewModel.onAction(AboutAction.RunSetupAgain); navigate() } },
     )
 }
 
 /**
- * ControlFix-branded About: mark, name, version, "Made by ControlFix", the app's own line, website,
- * support e-mail, report / suggest, language, theme, privacy and (with onboarding) run setup again.
+ * Settings: language, theme and (with onboarding) run setup again. Its action bar holds the
+ * feedback menu ("Suggest an idea" / "Report a bug", one popup in two states) and the "i" that
+ * opens About as a bottom sheet. Send closes the popup; the outcome is a snackbar here, or the
+ * mail app when the reports service cannot be reached.
  */
 @Composable
 fun AboutScreen(
     app: AppInfo,
     locale: AppLocale,
     theme: ThemeMode,
+    feedback: FeedbackState,
     onLocale: (AppLocale) -> Unit,
     onTheme: (ThemeMode) -> Unit,
+    onFeedback: (FeedbackAction) -> Unit,
     onBack: (() -> Unit)?,
-    onReport: (ReportKind) -> Unit,
     onRunSetupAgain: (() -> Unit)?,
     uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    var noMailApp by rememberSaveable { mutableStateOf(false) }
-    Column(
-        Modifier.fillMaxSize().testTag("about_screen").background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        ScreenHeader(stringResource(Res.string.about_title), onBack, stringResource(Res.string.common_back))
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
+    val currentOnFeedback by rememberUpdatedState(onFeedback)
 
-        SectionCard {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                AppMark(size = 72.dp)
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Wordmark(stringResource(Res.string.app_name))
-                    Text(stringResource(Res.string.about_version, app.version), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(
-                        stringResource(Res.string.about_made_by),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+    // Snackbar per outcome. "Sending..." stays until the result replaces it (this effect restarts).
+    LaunchedEffect(feedback.notice) {
+        val notice = feedback.notice ?: return@LaunchedEffect
+        when (notice) {
+            FeedbackNotice.Sending -> snackbar.showSnackbar(getString(Res.string.feedback_sending), duration = SnackbarDuration.Indefinite)
+            is FeedbackNotice.Sent -> snackbar.showSnackbar(
+                if (notice.ticketId.isBlank()) getString(Res.string.feedback_sent) else getString(Res.string.feedback_sent_id, notice.ticketId),
+            )
+            FeedbackNotice.RateLimited -> snackbar.showSnackbar(getString(Res.string.feedback_rate_limited))
+            FeedbackNotice.NoMailApp -> snackbar.showSnackbar(getString(Res.string.feedback_no_mail_app, ControlFixLinks.BUG_REPORT_EMAIL))
+        }
+        currentOnFeedback(FeedbackAction.NoticeShown)
+    }
+    // The service could not be reached: hand the text to the mail app instead.
+    LaunchedEffect(feedback.mailFallback) {
+        val uri = feedback.mailFallback ?: return@LaunchedEffect
+        currentOnFeedback(FeedbackAction.MailHandled(uriHandler.openSafely(uri)))
+    }
+
+    Box(Modifier.fillMaxSize().testTag("about_screen").background(MaterialTheme.colorScheme.background)) {
+        Column(
+            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(Modifier.fillMaxWidth().widthIn(max = ContentMaxWidth), verticalAlignment = Alignment.CenterVertically) {
+                ScreenHeader(stringResource(Res.string.about_settings), onBack, stringResource(Res.string.common_back), Modifier.weight(1f))
+                FeedbackMenu(onPick = { onFeedback(FeedbackAction.Open(it)) })
+                IconButton(onClick = { showAbout = true }, modifier = Modifier.testTag("about_open")) {
+                    Icon(AppIcons.Info, contentDescription = stringResource(Res.string.about_title), tint = MaterialTheme.colorScheme.onBackground)
                 }
             }
-            Text(stringResource(Res.string.about_body), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { uriHandler.openSafely(ControlFixLinks.WEBSITE) }, Modifier.testTag("about_website")) {
-                    Text(stringResource(Res.string.about_website))
-                }
-                TextButton(onClick = { uriHandler.openSafely(ControlFixLinks.PRIVACY) }, Modifier.testTag("about_privacy")) {
-                    Text(stringResource(Res.string.about_privacy))
+
+            SectionCard {
+                LanguageChoices(locale, onLocale)
+                ThemeChoices(theme, onTheme)
+                if (onRunSetupAgain != null) {
+                    OutlinedButton(onClick = onRunSetupAgain, Modifier.testTag("about_run_setup"), colors = brandOutlinedButtonColors()) {
+                        Text(stringResource(Res.string.about_run_setup))
+                    }
                 }
             }
         }
+        SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+    }
 
-        SectionCard {
-            SectionLabel(stringResource(Res.string.about_feedback), AppIcons.Mail)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onReport(ReportKind.BUG) }, Modifier.testTag("about_report"), colors = brandOutlinedButtonColors()) {
-                    Icon(AppIcons.Bug, contentDescription = null, Modifier.size(ButtonDefaults.IconSize))
-                    Text(stringResource(Res.string.about_report), Modifier.padding(start = 8.dp))
-                }
-                OutlinedButton(onClick = { onReport(ReportKind.SUGGESTION) }, Modifier.testTag("about_suggest"), colors = brandOutlinedButtonColors()) {
-                    Icon(AppIcons.Lightbulb, contentDescription = null, Modifier.size(ButtonDefaults.IconSize))
-                    Text(stringResource(Res.string.about_suggest), Modifier.padding(start = 8.dp))
-                }
-            }
-            TextButton(
-                onClick = { noMailApp = !uriHandler.openSafely("mailto:${ControlFixLinks.SUPPORT_EMAIL}") },
-                modifier = Modifier.testTag("about_support"),
-            ) { Text(stringResource(Res.string.about_support, ControlFixLinks.SUPPORT_EMAIL)) }
-            if (noMailApp) {
-                Text(
-                    stringResource(Res.string.report_no_mail, ControlFixLinks.SUPPORT_EMAIL),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
-
-        SectionCard {
-            SectionLabel(stringResource(Res.string.about_settings), AppIcons.Info)
-            LanguageChoices(locale, onLocale)
-            ThemeChoices(theme, onTheme)
-            if (onRunSetupAgain != null) {
-                OutlinedButton(onClick = onRunSetupAgain, Modifier.testTag("about_run_setup"), colors = brandOutlinedButtonColors()) {
-                    Text(stringResource(Res.string.about_run_setup))
-                }
-            }
-        }
+    if (showAbout) AboutSheet(app, uriHandler) { showAbout = false }
+    feedback.open?.let { open ->
+        FeedbackDialog(
+            bug = open.bug,
+            crashAt = open.crashAt,
+            onSend = { onFeedback(FeedbackAction.Send(it)) },
+            onDismiss = { onFeedback(FeedbackAction.Close) },
+        )
     }
 }
 
@@ -177,4 +172,11 @@ internal fun UriHandler.openSafely(uri: String): Boolean = try {
     true
 } catch (e: Exception) {
     false
+}
+
+/** Local "yyyy-MM-dd HH:mm"; numbers only, so no per-locale month names to translate. */
+internal fun formatTime(epochMillis: Long): String {
+    val t = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(TimeZone.currentSystemDefault())
+    fun Int.two() = toString().padStart(2, '0')
+    return "${t.year}-${t.monthNumber.two()}-${t.dayOfMonth.two()} ${t.hour.two()}:${t.minute.two()}"
 }

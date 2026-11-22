@@ -36,7 +36,7 @@ python3 scripts/new_project.py --name MyApp --package net.controlfix.myapp --des
 | Targets | Drop iOS (and/or desktop) when the core feature cannot exist there (GameController, LockdownControl): remove the target from the conventions and the host module, say why in the README |
 
 Keep: the ControlFix palette and Exo 2, the language stack (en/he/ru/fr, never the device
-language), About with report/suggest and support e-mail, the reports service app id = package.
+language), Settings with the feedback menu (Suggest an idea / Report a bug) and the About sheet with support e-mail, the reports service app id = package.
 
 ## 3. Build features the template's way
 

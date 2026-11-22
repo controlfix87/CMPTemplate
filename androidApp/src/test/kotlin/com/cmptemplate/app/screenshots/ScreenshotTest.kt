@@ -20,12 +20,13 @@ import com.cmptemplate.core.model.UserSettings
 import com.cmptemplate.core.designsystem.i18n.AppLocale
 import com.cmptemplate.core.designsystem.i18n.AppLocaleProvider
 import com.cmptemplate.core.model.AppInfo
-import com.cmptemplate.feature.about.report.ReportKind
+import androidx.compose.ui.platform.LocalUriHandler
 import com.cmptemplate.feature.about.ui.AboutScreen
-import com.cmptemplate.feature.about.ui.ReportScreen
-import com.cmptemplate.feature.about.ui.ReportState
-import com.cmptemplate.feature.about.ui.ReportStatus
-import com.cmptemplate.feature.about.ui.SendFailure
+import com.cmptemplate.feature.about.ui.AboutSheetContent
+import com.cmptemplate.feature.about.ui.FeedbackDialog
+import com.cmptemplate.feature.about.ui.FeedbackState
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
+import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.cmptemplate.feature.onboarding.ui.OnboardingScreen // [onboarding]
 import com.cmptemplate.feature.onboarding.ui.OnboardingState // [onboarding]
 import com.cmptemplate.feature.onboarding.ui.OnboardingStep // [onboarding]
@@ -124,28 +125,34 @@ class ScreenshotTest {
 
     @Test @Config(qualifiers = FOLD) fun aboutFold() = shot("about_fold") { AboutContent() }
 
-    @Test fun report() = shot("report_crash") {
-        ReportScreen(
-            ReportState(kind = ReportKind.CRASH, title = "Closes on start", message = "After the update", crashAt = 1_790_000_000_000L),
-            onAction = {}, onBack = {}, mailUri = { "" },
-        )
+    @Test fun aboutSheet() = shot("about_sheet_dark") { AboutSheetContent(app, LocalUriHandler.current) }
+
+    @Test fun aboutSheetLight() = shot("about_sheet_light", dark = false) { AboutSheetContent(app, LocalUriHandler.current) }
+
+    // The feedback popup is a dialog window: capture the whole screen, not the compose root.
+    @Test fun feedbackSuggestion() = dialogShot("feedback_suggestion_dark") {
+        FeedbackDialog(bug = false, crashAt = null, onSend = {}, onDismiss = {})
     }
 
-    @Test fun reportFailed() = shot("report_failed", dark = false) {
-        ReportScreen(
-            ReportState(title = "Sync", message = "Never finishes", status = ReportStatus.Failed(SendFailure.OFFLINE)),
-            onAction = {}, onBack = {}, mailUri = { "" },
-        )
+    @Test fun feedbackBugLight() = dialogShot("feedback_bug_light", dark = false) {
+        FeedbackDialog(bug = true, crashAt = 1_790_000_000_000L, onSend = {}, onDismiss = {})
     }
 
-    @Test fun reportSent() = shot("report_sent") {
-        ReportScreen(ReportState(status = ReportStatus.Sent("20261114T101500-1a2b3c4d")), onAction = {}, onBack = {}, mailUri = { "" })
+    @Test fun feedbackBugHebrew() = dialogShot("feedback_bug_he_dark") {
+        AppLocaleProvider(AppLocale.Hebrew) { FeedbackDialog(bug = true, crashAt = null, onSend = {}, onDismiss = {}) }
+    }
+
+    @OptIn(ExperimentalRoborazziApi::class)
+    private fun dialogShot(name: String, dark: Boolean = true, content: @Composable () -> Unit) {
+        compose.setContent { CMPTemplateTheme(darkTheme = dark) { content() } }
+        compose.waitForIdle()
+        captureScreenRoboImage("$DIR/$name.png")
     }
 
     @Composable
     private fun AboutContent() = AboutScreen(
-        app = app, locale = AppLocale.English, theme = ThemeMode.SYSTEM,
-        onLocale = {}, onTheme = {}, onBack = {}, onReport = {},
+        app = app, locale = AppLocale.English, theme = ThemeMode.SYSTEM, feedback = FeedbackState(),
+        onLocale = {}, onTheme = {}, onFeedback = {}, onBack = {},
         onRunSetupAgain = {}, // [onboarding]
         // onRunSetupAgain = null, // without onboarding
     )

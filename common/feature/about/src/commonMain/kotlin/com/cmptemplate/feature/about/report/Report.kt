@@ -2,8 +2,12 @@ package com.cmptemplate.feature.about.report
 
 import kotlinx.serialization.Serializable
 
+/**
+ * What the user picked in the feedback menu. A recorded crash never picks the kind: it travels with
+ * a bug report, and only when the user ticks the log consent box.
+ */
 enum class ReportKind(val wire: String) {
-    CRASH("crash"), BUG("bug"), SUGGESTION("suggestion");
+    BUG("bug"), SUGGESTION("suggestion");
 
     companion object {
         fun ofWire(wire: String?): ReportKind = entries.firstOrNull { it.wire == wire } ?: BUG
@@ -16,8 +20,11 @@ data class ReportDraft(
     val message: String,
     /** Optional e-mail for a reply; sent only when the user typed one. */
     val contact: String = "",
-    /** Device details always go; this adds the redacted recent log and the last crash. */
-    val includeLogs: Boolean = true,
+    /**
+     * Device details always go; this adds the redacted recent log and the last crash. Only ever true
+     * for a [ReportKind.BUG] whose consent box the user ticked (off by default).
+     */
+    val includeLogs: Boolean = false,
 )
 
 sealed interface ReportResult {

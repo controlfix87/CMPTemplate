@@ -12,12 +12,10 @@ import com.cmptemplate.feature.about.ui.AboutViewModel
 import com.cmptemplate.core.model.AppInfo
 import com.cmptemplate.feature.about.report.Diagnostics
 import com.cmptemplate.feature.about.report.NoDiagnostics
-import com.cmptemplate.feature.about.report.ReportKind
 import com.cmptemplate.feature.about.report.ReportSender
-import com.cmptemplate.feature.about.ui.ReportViewModel
+import com.cmptemplate.feature.about.ui.FeedbackViewModel
 import com.cmptemplate.feature.onboarding.ui.OnboardingViewModel // [onboarding]
 import org.junit.jupiter.api.Test
-import org.koin.core.parameter.parametersOf
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.koin.dsl.koinApplication
@@ -61,13 +59,13 @@ class KoinModulesTest {
         factory { SavedStateHandle() }
     }
 
-    @Test fun `production composition resolves app, about, report and onboarding view models`() {
+    @Test fun `production composition resolves app, about, feedback and onboarding view models`() {
         val app = koinApplication { modules(appModules + hostFakes) }
         try {
             assertNotNull(app.koin.get<AppViewModel>())
             assertNotNull(app.koin.get<AboutViewModel>())
             assertNotNull(app.koin.get<ReportSender>())
-            assertNotNull(app.koin.get<ReportViewModel> { parametersOf(ReportKind.BUG) })
+            assertNotNull(app.koin.get<FeedbackViewModel>())
             assertNotNull(app.koin.get<OnboardingViewModel>()) // [onboarding]
         } finally { app.close() }
     }

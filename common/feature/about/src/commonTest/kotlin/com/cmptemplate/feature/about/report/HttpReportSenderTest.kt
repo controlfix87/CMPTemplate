@@ -52,7 +52,7 @@ class HttpReportSenderTest {
         })
         val diagnostics = FakeDiagnostics(crash = CrashRecord(1L, "boom token=abc123"))
         try {
-            val result = HttpReportSender(client, app, diagnostics).send(ReportDraft(ReportKind.BUG, "Title", "Message", "me@example.com"))
+            val result = HttpReportSender(client, app, diagnostics).send(ReportDraft(ReportKind.BUG, "Title", "Message", "me@example.com", includeLogs = true))
             assertEquals(ReportResult.Sent("T-1"), result)
         } finally { client.close() }
         val sent = json.parseToJsonElement(body).jsonObject
@@ -67,6 +67,11 @@ class HttpReportSenderTest {
     }
 
     @Test fun `without logs no log or crash leaves the device`() = runTest {
+        noLogsSent(ReportDraft(ReportKind.BUG, "T", "M")) // consent off is the default
+        noLogsSent(ReportDraft(ReportKind.SUGGESTION, "T", "M", includeLogs = true)) // a suggestion never carries logs
+    }
+
+    private suspend fun noLogsSent(draft: ReportDraft) {
         var body = ""
         val client = createHttpClient("https://reports.test/", engine = engine { request ->
             body = request.body.toByteArray().decodeToString()
@@ -74,7 +79,7 @@ class HttpReportSenderTest {
         })
         val diagnostics = FakeDiagnostics(crash = CrashRecord(1L, "trace"))
         try {
-            HttpReportSender(client, app, diagnostics).send(ReportDraft(ReportKind.SUGGESTION, "T", "M", includeLogs = false))
+            HttpReportSender(client, app, diagnostics).send(draft)
         } finally { client.close() }
         val sent = json.parseToJsonElement(body).jsonObject
         assertNull(sent["log"]?.takeIf { it.toString() != "null" })

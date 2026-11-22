@@ -55,7 +55,6 @@ private val navigationState = SavedStateConfiguration {
             subclass(ExampleRoute.List::class, ExampleRoute.List.serializer())
             subclass(ExampleRoute.Detail::class, ExampleRoute.Detail.serializer())
             subclass(AboutRoute.About::class, AboutRoute.About.serializer())
-            subclass(AboutRoute.Report::class, AboutRoute.Report.serializer())
             subclass(OnboardingRoute::class, OnboardingRoute.serializer()) // [onboarding]
         }
     }
@@ -120,7 +119,6 @@ fun App(onFirstScreenReady: () -> Unit = {}) {
                     )
                     aboutEntries(
                         onBack = goBack,
-                        onReport = { kind -> push(AboutRoute.Report(kind.wire)) },
                         // About's ViewModel clears "done" in DataStore, then this navigates.
                         onRunSetupAgain = { resetTo(OnboardingRoute) }, // [onboarding]
                         // onRunSetupAgain = null, // without onboarding

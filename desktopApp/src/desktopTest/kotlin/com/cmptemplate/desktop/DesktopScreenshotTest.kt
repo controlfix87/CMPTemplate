@@ -15,6 +15,7 @@ import com.cmptemplate.core.designsystem.i18n.AppLocaleProvider
 import com.cmptemplate.core.designsystem.i18n.LocaleStore
 import com.cmptemplate.core.model.AppInfo
 import com.cmptemplate.feature.about.ui.AboutScreen
+import com.cmptemplate.feature.about.ui.FeedbackState
 import com.cmptemplate.feature.onboarding.ui.OnboardingScreen // [onboarding]
 import com.cmptemplate.feature.onboarding.ui.OnboardingState // [onboarding]
 import com.cmptemplate.feature.onboarding.ui.OnboardingStep // [onboarding]
@@ -67,8 +68,8 @@ class DesktopScreenshotTest {
             CMPTemplateTheme(darkTheme = true) {
                 AboutScreen(
                     app = AppInfo("com.cmptemplate.app", "CMPTemplate", "1.0.0", "1", "desktop", "desktop"),
-                    locale = AppLocale.English, theme = ThemeMode.DARK,
-                    onLocale = {}, onTheme = {}, onBack = {}, onReport = {},
+                    locale = AppLocale.English, theme = ThemeMode.DARK, feedback = FeedbackState(),
+                    onLocale = {}, onTheme = {}, onFeedback = {}, onBack = {},
                     onRunSetupAgain = {}, // [onboarding]
                     // onRunSetupAgain = null, // without onboarding
                 )

@@ -51,7 +51,7 @@ fun ExampleScreen(
                             modifier = Modifier.weight(1f),
                         )
                         TextButton(onClick = onAbout, modifier = Modifier.testTag("example_about")) {
-                            Text(stringResource(Res.string.about_title))
+                            Text(stringResource(Res.string.about_settings))
                         }
                     }
                 }

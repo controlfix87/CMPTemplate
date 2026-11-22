@@ -15,7 +15,6 @@ object SupportMail {
 
     fun uri(draft: ReportDraft, app: AppInfo, device: DeviceInfo, address: String = ControlFixLinks.BUG_REPORT_EMAIL): String {
         val label = when (draft.kind) {
-            ReportKind.CRASH -> "Crash"
             ReportKind.BUG -> "Bug"
             ReportKind.SUGGESTION -> "Suggestion"
         }
