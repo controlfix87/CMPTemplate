@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- About/reports per feedback-report skill: Settings screen with feedback menu + About sheet, two-state popup (consent off, reply e-mail), snackbars, mail fallback; tests pass (about 15x2, Koin 3); verified on s25 light+dark (fixed black action icons in dark); pushed 648563e (T1130)
 - Official SplashScreen API (core-splashscreen 1.2.0), placeholder ic_splash_icon, light/dark brand colours, held until first settings read; verified on s25 (API 37, light+dark) and s8 (API 28); pushed 042d58d. Host note: ~/.gradle aapt2 override points to missing ~/bin/aapt2 (T1078)
 - Android splash on the official SplashScreen API (`core-splashscreen` 1.2.0): `Theme.CMPTemplate.Starting`, placeholder `ic_splash_icon`, light/dark brand colours, held only until the first settings read (`App(onFirstScreenReady)`) (T1078)
 - CMPTemplate: Compose Multiplatform (Android, iOS, desktop), Roborazzi screenshots, ControlFix branding, About + reports to reports.controlfix.net with e-mail fallback, optional onboarding, DataStore settings, ViewModel-owned state; repo and folder renamed to CMPTemplate (T0978)
