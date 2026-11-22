@@ -95,7 +95,7 @@ jobs:
       - name: Compile and link shared iOS framework
         run: ./gradlew -Pcmptemplate.enableIos=true :common:sharedApp:linkDebugFrameworkIosSimulatorArm64 :common:core:common:iosSimulatorArm64Test :common:feature:example:iosSimulatorArm64Test :common:feature:about:iosSimulatorArm64Test
       - name: Build Swift host for simulator
-        run: xcodebuild -project iosApp/CMPTemplate.xcodeproj -scheme CMPTemplate -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -project iosApp/CMPTemplate.xcodeproj -scheme CMPTemplate -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath iosApp/build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         if: success()
         with:
