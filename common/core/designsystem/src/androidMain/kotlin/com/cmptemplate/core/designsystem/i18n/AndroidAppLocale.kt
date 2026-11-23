@@ -30,7 +30,7 @@ import java.util.Locale
  * 1. **[syncSystemPerAppLocale] (API 33+)** — hand the choice to the platform's per-app language
  *    service. From then on the *system* stamps the language into every Configuration it builds for
  *    this app, including the Application's, so the re-derivation above yields the app's language.
- *    This is the real fix; everything below it is what covers API 26-32.
+ *    This is the real fix; everything below it is what covers API 28-32.
  * 2. **[wrap] on the Application's base context** — `createConfigurationContext` registers a
  *    persistent override in `ResourcesManager`, so the Application's `Resources` keep the language
  *    across configuration updates and the re-derivation reads it back.

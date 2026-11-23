@@ -5,7 +5,7 @@ strings, fonts, icons, theme all in `commonMain`), Navigation 3, Koin, state res
 networking, Roborazzi screenshot tests and repeatable project generation. It ships the ControlFix
 branding, a Settings screen with About and an in-app "Suggest an idea / Report a bug" popup wired to the ControlFix reports
 service, and an optional first-run onboarding.
-Android compiles and targets **Android 17 / API 37**, with **minSdk 26**.
+Android compiles and targets **Android 17 / API 37**, with **minSdk 28**.
 
 ## Create a project
 

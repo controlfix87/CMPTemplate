@@ -31,7 +31,7 @@ so TPL-013 and TPL-014 remain external validation tasks.
 | Shared/common tests | `./gradlew :common:core:model:allTests :common:core:common:allTests` | Pass |
 | Feature ViewModel/HTTP/DI host tests | `./gradlew testAndroidHostTest` | Pass |
 | Android app unit tests (Koin module resolution) | `./gradlew :androidApp:testDebugUnitTest` | Pass |
-| Lint | `./gradlew :androidApp:lintDebug` | 1 informational warning only (`DataExtractionRules` attribute is a no-op below API 31, by design since minSdk is 26); no actionable findings |
+| Lint | `./gradlew :androidApp:lintDebug` | 1 informational warning only (`DataExtractionRules` attribute is a no-op below API 31, by design since minSdk is 28); no actionable findings |
 | Debug APK + instrumentation APK assembly | `./gradlew :androidApp:assembleDebug :androidApp:assembleDebugAndroidTest` | Pass |
 | Release build with R8 + resource shrinking | `./gradlew :androidApp:assembleRelease` | Pass, unsigned release APK produced |
 | 16 KB page / ZIP alignment check | `python3 scripts/check_apk.py androidApp/build/outputs/apk/debug/androidApp-debug.apk` | Pass, 2 native 64-bit libraries checked |
@@ -87,7 +87,7 @@ the macOS framework/host build outputs as review artifacts when those lanes
 pass. Artifact retention makes the platform acceptance evidence inspectable
 without copying build output into the repository.
 
-- **TPL-013 — Android instrumentation on real hardware/emulators (API 26/35/37):** no
+- **TPL-013 — Android instrumentation on real hardware/emulators (API 28/35/37):** no
   device or emulator is attached to this host. `assembleDebugAndroidTest` compiling is
   evidence of compilation only, not of `connectedDebugAndroidTest` passing. Real phone
   rotation, foldable/tablet, process-death (`adb shell am kill`), IME, font-scale, and
