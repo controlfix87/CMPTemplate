@@ -13,6 +13,7 @@
 - Brand-coloured outlined buttons, system back in onboarding, RTL/locale screenshots, device tests wait for first screen; validated on s8 and generated projects; reports worker can e-mail tickets (deploy pending owner OK) (T0996)
 
 ### Changed
+- SDK/edge-to-edge already compliant; a11y semantics fixes pushed; unverified, awaiting combined round (T1218)
 - minSdk 28 (Android 9) instead of 26; CI device matrix API 28/35/37 (T1177)
 - Merged audit/architecture-infrastructure: layer import and nested-module boundary checks in check_project.py, verify.sh runs Gradle through the build queue when present, iOS CI derived-data path, audit docs (not copied into generated projects); AGENTS.md left out (T1136)
 - About and reports follow the feedback-report skill: About route is Settings with a feedback menu (Suggest an idea / Report a bug, one two-state popup, log consent off by default, reply e-mail, snackbar results, mail fallback) and the About bottom sheet; report screen and crash kind removed (T1130)
