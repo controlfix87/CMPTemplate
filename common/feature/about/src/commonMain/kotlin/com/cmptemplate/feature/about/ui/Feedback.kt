@@ -293,8 +293,8 @@ fun AboutSheetContent(app: AppInfo, uriHandler: UriHandler) {
         // The ControlFix name in the brand style stands in for the logo image; taps open the website.
         Wordmark(
             "ControlFix",
-            modifier = Modifier.clip(MaterialTheme.shapes.small).clickable { uriHandler.openSafely(ControlFixLinks.WEBSITE) }
-                .padding(horizontal = 8.dp, vertical = 4.dp).testTag("about_controlfix"),
+            modifier = Modifier.clip(MaterialTheme.shapes.small).clickable(role = Role.Link) { uriHandler.openSafely(ControlFixLinks.WEBSITE) }
+                .heightIn(min = 48.dp).padding(horizontal = 8.dp, vertical = 4.dp).testTag("about_controlfix"),
             highlight = "Control",
             style = MaterialTheme.typography.headlineMedium,
         )

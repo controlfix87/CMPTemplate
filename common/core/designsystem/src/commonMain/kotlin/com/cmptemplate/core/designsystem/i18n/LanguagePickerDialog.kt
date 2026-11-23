@@ -1,6 +1,5 @@
 package com.cmptemplate.core.designsystem.i18n
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +13,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.cmptemplate.core.designsystem.generated.resources.Res
@@ -63,7 +65,8 @@ private fun LanguageRow(locale: AppLocale, selected: Boolean, onClick: () -> Uni
             // 48dp minimum and this dialog is the one screen a user who cannot read the current
             // language has to operate.
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
+            .heightIn(min = 48.dp)
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

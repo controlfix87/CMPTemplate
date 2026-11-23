@@ -29,7 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -137,6 +140,8 @@ fun StepProgress(titles: List<String>, current: Int, onStep: (Int) -> Unit, modi
                 Modifier.weight(1f)
                     .clip(RoundedCornerShape(6.dp))
                     .then(if (i < current) Modifier.clickable(role = Role.Button) { onStep(i) } else Modifier)
+                    .heightIn(min = 48.dp)
+                    .semantics(mergeDescendants = true) { selected = i == current }
                     .padding(vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
