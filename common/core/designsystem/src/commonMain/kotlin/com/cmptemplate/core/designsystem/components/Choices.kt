@@ -2,7 +2,10 @@ package com.cmptemplate.core.designsystem.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -31,7 +34,7 @@ import org.jetbrains.compose.resources.stringResource
 fun LanguageChoices(current: AppLocale, onSelect: (AppLocale) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel(stringResource(Res.string.language), AppIcons.Language)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChoiceRows {
             AppLocale.entries.forEach { locale ->
                 OptionCard(
                     selected = locale == current,
@@ -44,12 +47,28 @@ fun LanguageChoices(current: AppLocale, onSelect: (AppLocale) -> Unit, modifier:
     }
 }
 
+/**
+ * Option cards in one row; with large text (font scale 1.5 and up) two per row, so labels wrap on
+ * word boundaries instead of breaking inside a word. Children use `Modifier.weight(1f)`.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ChoiceRows(content: @Composable FlowRowScope.() -> Unit) {
+    FlowRow(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        maxItemsInEachRow = if (LocalDensity.current.fontScale >= 1.5f) 2 else Int.MAX_VALUE,
+        content = content,
+    )
+}
+
 /** Follow the device, light or dark. */
 @Composable
 fun ThemeChoices(current: ThemeMode, onSelect: (ThemeMode) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionLabel(stringResource(Res.string.theme), AppIcons.ThemeAuto)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChoiceRows {
             listOf(
                 Triple(ThemeMode.SYSTEM, Res.string.theme_system, AppIcons.ThemeAuto),
                 Triple(ThemeMode.LIGHT, Res.string.theme_light, AppIcons.LightMode),
