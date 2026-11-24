@@ -5,7 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -69,7 +71,7 @@ private const val DIR = "build/outputs/roborazzi"
 // A plain Application: the real one starts Koin itself, and Robolectric makes one per test.
 @Config(sdk = [36], qualifiers = PHONE, application = Application::class)
 class ScreenshotTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     private val app = AppInfo("com.cmptemplate.app", "CMPTemplate", "1.0.0", "1", "android/debug", "android")
 
@@ -158,7 +160,8 @@ class ScreenshotTest {
     @OptIn(ExperimentalRoborazziApi::class)
     private fun dialogShot(name: String, dark: Boolean = true, content: @Composable () -> Unit) {
         compose.mainClock.autoAdvance = false
-        compose.setContent { CMPTemplateTheme(darkTheme = dark) { content() } }
+        // Activity.setContent: the rule's setContent would wait for idle, which the cursor blink prevents.
+        compose.activity.setContent { CMPTemplateTheme(darkTheme = dark) { content() } }
         shadowOf(Looper.getMainLooper()).idle()
         compose.mainClock.advanceTimeBy(1_000)
         shadowOf(Looper.getMainLooper()).idle()
