@@ -1,5 +1,7 @@
 # Changelog
 
+- Android modernisation finished: fold hinge/tabletop-aware two-pane (androidx.window), headings, large-font fixes (option cards, onboarding buttons), settings category saved across process death, predictive back enabled, screenshot tests for hinge and 200% font scale.
+
 ## [Unreleased]
 
 ### Added
