@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cmptemplate.core.designsystem.components.AppIcons
@@ -260,6 +261,11 @@ private fun CategoryRow(selected: Boolean, icon: ImageVector, label: String, tag
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(icon, contentDescription = null, Modifier.size(24.dp), tint = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant)
-        Text(label, style = MaterialTheme.typography.titleMedium, color = if (selected) colors.onSecondaryContainer else colors.onSurface)
+        Text(
+            label,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = if (selected) FontWeight.Bold else null,
+            color = if (selected) colors.onSecondaryContainer else colors.onSurface,
+        )
     }
 }

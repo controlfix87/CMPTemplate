@@ -13,6 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import com.cmptemplate.core.designsystem.components.AppIcons
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,7 +79,7 @@ fun ExampleScreen(
                 )
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                    ExampleList(state, onAction, listState, null, onItem = onDetail, onAbout, Modifier.widthIn(max = 840.dp).fillMaxSize())
+                    ExampleList(state, onAction, listState, null, onItem = { onAction(ExampleAction.Select(it)); onDetail(it) }, onAbout, Modifier.widthIn(max = 840.dp).fillMaxSize())
                 }
             }
         }
@@ -102,7 +107,7 @@ private fun ExampleList(
                 Text(
                     stringResource(Res.string.example_title),
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).semantics { heading() },
                 )
                 TextButton(onClick = onAbout, modifier = Modifier.testTag("example_about")) {
                     Text(stringResource(Res.string.about_settings))
@@ -119,7 +124,8 @@ private fun ExampleList(
             )
         }
         if (state.isLoading) item(key = "loading") {
-            CircularProgressIndicator(Modifier.testTag("example_loading"))
+            val loading = stringResource(Res.string.example_loading)
+            CircularProgressIndicator(Modifier.testTag("example_loading").semantics { contentDescription = loading })
         }
         state.error?.let { error ->
             item(key = "error") {
@@ -133,7 +139,10 @@ private fun ExampleList(
         items(state.items, key = { "item-${it.id}" }, contentType = { "example" }) { item ->
             val selected = item.id == selectedId
             ListItem(
-                headlineContent = { Text(item.title) },
+                headlineContent = { Text(item.title, fontWeight = if (selected) FontWeight.Bold else null) },
+                // The selection is also shown without colour (check mark); the state itself is
+                // announced through selectable(), so the icon stays decorative.
+                trailingContent = if (selected) ({ Icon(AppIcons.Check, contentDescription = null) }) else null,
                 colors = ListItemDefaults.colors(
                     containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                 ),
@@ -188,7 +197,7 @@ fun ExampleDetailScreen(itemId: String, onBack: () -> Unit) {
 @Composable
 internal fun ExampleDetailContent(itemId: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier) {
     LazyColumn(modifier.testTag("example_detail"), contentPadding = PaddingValues(16.dp)) {
-        item { Text(stringResource(Res.string.example_detail, itemId), style = MaterialTheme.typography.headlineSmall) }
+        item { Text(stringResource(Res.string.example_detail, itemId), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall) }
         if (onBack != null) {
             item { Button(onClick = onBack, modifier = Modifier.testTag("detail_back")) { Text(stringResource(Res.string.example_back)) } }
         }

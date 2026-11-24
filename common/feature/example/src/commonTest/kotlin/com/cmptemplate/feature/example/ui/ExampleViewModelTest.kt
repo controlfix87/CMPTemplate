@@ -69,4 +69,17 @@ class ExampleViewModelTest {
             assertEquals("Second", expectMostRecentItem().query)
         }
     }
+    @Test fun `selection is stored in saved state and restored`() = runTest {
+        val repo = FakeExampleRepository(listOf(ExampleItem("1", "First"), ExampleItem("2", "Second")))
+        val saved = SavedStateHandle()
+        val vm = model(repo, saved)
+        vm.state.test {
+            assertNull(expectMostRecentItem().selectedId)
+            vm.onAction(ExampleAction.Select("2"))
+            assertEquals("2", expectMostRecentItem().selectedId)
+        }
+        model(repo, SavedStateHandle(mapOf("selected" to saved.get<String>("selected")))).state.test {
+            assertEquals("2", expectMostRecentItem().selectedId)
+        }
+    }
 }

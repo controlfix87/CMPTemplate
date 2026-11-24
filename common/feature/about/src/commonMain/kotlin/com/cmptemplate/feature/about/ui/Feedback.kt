@@ -53,6 +53,8 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -168,7 +170,7 @@ fun FeedbackDialog(
         title = {
             Text(
                 stringResource(if (bug) Res.string.feedback_bug_title else Res.string.feedback_suggest_title),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { heading() },
                 textAlign = TextAlign.Center,
             )
         },
@@ -211,6 +213,7 @@ fun FeedbackDialog(
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             Modifier.fillMaxWidth()
+                                .heightIn(min = 48.dp)
                                 .toggleable(value = includeLogs, role = Role.Checkbox, onValueChange = { includeLogs = it })
                                 .testTag("feedback_logs_consent"),
                             verticalAlignment = Alignment.CenterVertically,

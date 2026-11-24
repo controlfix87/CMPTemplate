@@ -22,7 +22,13 @@ import com.cmptemplate.core.model.UserSettings
 import com.cmptemplate.core.designsystem.i18n.AppLocale
 import com.cmptemplate.core.designsystem.i18n.AppLocaleProvider
 import com.cmptemplate.core.model.AppInfo
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.Density
+import com.cmptemplate.core.designsystem.components.FoldingState
+import com.cmptemplate.core.designsystem.components.LocalFoldingState
 import com.cmptemplate.feature.about.ui.AboutScreen
 import com.cmptemplate.feature.about.ui.AboutSheetContent
 import com.cmptemplate.feature.about.ui.FeedbackDialog
@@ -190,7 +196,42 @@ class ScreenshotTest {
     @Test @Config(qualifiers = TABLET) fun onboardingTablet() = shot("onboarding_welcome_tablet") {
         OnboardingScreen(OnboardingState(OnboardingStep.WELCOME, AppLocale.English, ThemeMode.DARK)) {}
     }
+
+    // A separating vertical hinge (book posture) in the middle of the Fold inner screen (xhdpi: 2px per dp).
+    @Test @Config(qualifiers = FOLD_INNER) fun exampleTwoPaneFoldHinge() = shot("example_two_pane_fold_hinge") {
+        CompositionLocalProvider(LocalFoldingState provides FoldingState(Rect(656f, 0f, 690f, 1682f))) {
+            ExampleScreen(ExampleState(items = items, isLoading = false, selectedId = "2"), onAction = {}, onDetail = {})
+        }
+    }
+
+    // Tabletop posture: horizontal hinge, list above and detail below.
+    @Test @Config(qualifiers = FOLD_INNER) fun exampleTwoPaneTabletop() = shot("example_two_pane_tabletop") {
+        CompositionLocalProvider(LocalFoldingState provides FoldingState(Rect(0f, 830f, 1346f, 850f), horizontal = true)) {
+            ExampleScreen(ExampleState(items = items, isLoading = false, selectedId = "2"), onAction = {}, onDetail = {})
+        }
+    }
     // endregion two-pane
+
+    // region 200% font scale
+    private fun large(content: @Composable () -> Unit): @Composable () -> Unit = {
+        val d = LocalDensity.current
+        CompositionLocalProvider(LocalDensity provides Density(d.density, fontScale = 2f)) { content() }
+    }
+
+    @Test fun exampleFont200() = shot("example_font200", content = large {
+        ExampleScreen(ExampleState(items = items, isLoading = false), onAction = {}, onDetail = {})
+    })
+
+    @Test fun onboardingFont200() = shot("onboarding_welcome_font200", content = large {
+        OnboardingScreen(OnboardingState(OnboardingStep.WELCOME, AppLocale.English, ThemeMode.DARK)) {}
+    })
+
+    @Test @Config(qualifiers = FOLD_INNER) fun exampleTwoPaneFont200() = shot("example_two_pane_fold_font200", content = large {
+        ExampleScreen(ExampleState(items = items, isLoading = false, selectedId = "2"), onAction = {}, onDetail = {})
+    })
+
+    @Test fun aboutFont200() = shot("about_font200", content = large { AboutContent() })
+    // endregion font scale
 
     @Composable
     private fun AboutContent(category: SettingsCategory = SettingsCategory.Language) = AboutScreen(

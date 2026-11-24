@@ -7,7 +7,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Rect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import com.cmptemplate.core.designsystem.components.FoldingState
+import com.cmptemplate.core.designsystem.components.LocalFoldingState
 import com.cmptemplate.core.designsystem.i18n.AndroidAppLocale
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
 
@@ -45,6 +56,23 @@ class MainActivity : ComponentActivity() {
         AndroidAppLocale.reassert(this)
     }
 
+    /** Separating folds (hinge, half-open posture) of this window, for the two-pane layouts. */
+    private fun foldingStates(): Flow<FoldingState> {
+        val context: Context = this
+        return WindowInfoTracker.getOrCreate(context).windowLayoutInfo(context).map { info ->
+            val fold = info.displayFeatures.filterIsInstance<FoldingFeature>().firstOrNull { it.isSeparating }
+            if (fold == null) {
+                FoldingState.None
+            } else {
+                val b = fold.bounds
+                FoldingState(
+                    Rect(b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat()),
+                    horizontal = fold.orientation == FoldingFeature.Orientation.HORIZONTAL,
+                )
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Official SplashScreen API: must run before super.onCreate(); swaps the launch theme
         // (Theme.CMPTemplate.Starting) for postSplashScreenTheme.
@@ -55,6 +83,11 @@ class MainActivity : ComponentActivity() {
         // on the main thread, so a plain field is enough. Never hold it for network or other slow work.
         splashScreen.setKeepOnScreenCondition { !firstScreenReady }
         enableEdgeToEdge()
-        setContent { App(onFirstScreenReady = { firstScreenReady = true }) }
+        setContent {
+            val fold by remember { foldingStates() }.collectAsStateWithLifecycle(FoldingState.None)
+            CompositionLocalProvider(LocalFoldingState provides fold) {
+                App(onFirstScreenReady = { firstScreenReady = true })
+            }
+        }
     }
 }

@@ -15,11 +15,19 @@ Two-pane now:
 - Settings: one app bar, categories (Language, Theme, run setup again) left, the chosen category right. Selected category is `AboutUiState.category` in the ViewModel (survives rotation and fold; not process death).
 - Onboarding welcome step: greeting left, language and theme cards right from 720dp (the Fold inner screen stays one column); the other steps keep the 720dp readable width.
 
+Fold / hinge handling (done): `TwoPane` reads `LocalFoldingState` (designsystem, common code, default "no fold"). The Android host (`MainActivity`) fills it from `androidx.window` `WindowInfoTracker` with the first separating `FoldingFeature` (half-open or occluding hinge). Vertical hinge (book): list left of the hinge, detail right of it, no pane under the hinge, no divider. Horizontal hinge (tabletop): list above, detail below. Flat or folded: the plain 40/60 weighted split. Pane content is `movableContentOf`, so folding keeps scroll and text state. iOS and desktop keep the default (no fold). Screenshot tests: `example_two_pane_fold_hinge`, `example_two_pane_tabletop`.
+
+Detail opened from compact, then widened: the detail route renders the two-pane screen with its item selected. Tapping an item in the compact list also stores it as the list entry's selection, so going back from that route lands on the list with the item selected when the window is wide. Selections made inside the pane of a widened detail route stay on that route's ViewModel.
+
+Process death: `ExampleState.selectedId` and the query use `SavedStateHandle`; the settings category (`AboutViewModel`) now does too. ViewModel tests cover both restores.
+
+Accessibility (done): headings on screen titles, section labels, onboarding and detail titles, dialog title; loading indicator has a description; list selection and settings category are shown without colour alone (bold plus check mark) and exposed as selected state; 48dp minimum for list items, step progress, consent row, wordmark link; option cards and step titles grow with font scale instead of clipping; onboarding buttons stack vertically from font scale 1.5 so they fit at 200%; each pane is a traversal group (finish list, then detail). Decorative icons (beside text) have `contentDescription = null`, every icon-only button (back, feedback menu, About) has a label. Reduced motion: the app has no infinite or Lottie animation of its own; the only motion is Compose animations (crossfade, step transition, colour) and the platform progress indicator, which Compose stops when the system animator duration scale is 0 (Remove animations). Screenshot tests at 200% font scale: `example_font200`, `onboarding_welcome_font200`, `example_two_pane_fold_font200`, `about_font200`.
+
+Architecture: DataStore for settings (theme, onboarding); the app language stays in SharedPreferences on purpose: Android needs it synchronously in `attachBaseContext`, before DI or coroutines exist (documented in `AndroidAppLocale`). State lives in ViewModels, `collectAsStateWithLifecycle` everywhere, Koin, strings in resources (no new strings were added, so no new translations), `allowBackup=false` plus data extraction rules, `enableOnBackInvokedCallback=true` (predictive back), minSdk 28 / targetSdk 37.
+
 Not done / limits:
-- Uses a width-based `TwoPane` instead of `ListDetailPaneScaffold` / Navigation 3 `ListDetailSceneStrategy`: the shared code must also run on iOS and desktop, and no extra artifact was added without a build. Swapping to the adaptive Scene strategy later only touches `ExampleScreen`.
-- Hinge/posture (tabletop/book) is not handled: no WindowManager fold feature in common code; the 40/60 split is a plain weight, so on a Fold the hinge sits in the pane divider region but is not detected.
-- Back from the compact-opened detail route after it was widened returns to the list entry, whose own ViewModel keeps its own selection (the route's item is not copied back).
-- Screenshot tests added (Fold inner w673dp-h841dp, tablet w1280dp-h800dp land); not yet recorded or reviewed.
+- Width-based `TwoPane` instead of `ListDetailPaneScaffold` / Navigation 3 `ListDetailSceneStrategy`: the shared code must also run on iOS and desktop, where those artifacts do not apply. The hinge handling above covers the Android-specific part.
+- TalkBack, 200% font and real foldable behaviour are verified in Roborazzi shots only; a device run is a separate step.
 
 ## Feedback dialog screenshot tests (AppNotIdleException)
 

@@ -8,6 +8,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,6 +50,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,9 +76,24 @@ val ContentMaxWidth = 720.dp
 val TwoPaneMinWidth = 600.dp
 
 /**
+ * A fold or hinge that separates the window into two usable areas. [bounds] are in window pixels;
+ * [horizontal] is a hinge running left-right (tabletop posture: panes stack), otherwise vertical
+ * (book posture: panes sit side by side). [None] = no separating fold (flat, folded, or no support).
+ */
+data class FoldingState(val bounds: Rect? = null, val horizontal: Boolean = false) {
+    companion object { val None = FoldingState() }
+}
+
+/** Provided by the platform host (Android: androidx.window); other targets keep the default. */
+val LocalFoldingState = staticCompositionLocalOf { FoldingState.None }
+
+/**
  * Two side-by-side panes with a divider ([firstWeight] of the width for the list/master pane).
  * Each pane is its own traversal group so TalkBack and keyboard focus finish one pane before the
  * next; the Row mirrors in right-to-left locales. The caller supplies the insets and app bar.
+ *
+ * With a separating fold ([LocalFoldingState]) the panes sit on either side of the hinge instead
+ * (side by side for a vertical hinge, stacked for a horizontal one) and no pane is drawn under it.
  */
 @Composable
 fun TwoPane(
@@ -71,10 +102,46 @@ fun TwoPane(
     modifier: Modifier = Modifier,
     firstWeight: Float = 0.4f,
 ) {
-    Row(modifier) {
-        Box(Modifier.weight(firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { first() }
-        VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Box(Modifier.weight(1f - firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { second() }
+    val firstContent by rememberUpdatedState(first)
+    val secondContent by rememberUpdatedState(second)
+    // Movable so a fold/unfold keeps scroll and text state instead of rebuilding the panes.
+    val firstPane = remember { movableContentOf { firstContent() } }
+    val secondPane = remember { movableContentOf { secondContent() } }
+    val fold = LocalFoldingState.current
+    val density = LocalDensity.current
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val hinge = fold.bounds
+    val fits = hinge != null && size != IntSize.Zero && if (fold.horizontal) {
+        hinge.top >= origin.y && hinge.bottom <= origin.y + size.height
+    } else {
+        hinge.left >= origin.x && hinge.right <= origin.x + size.width
+    }
+
+    Box(modifier.onGloballyPositioned { origin = it.positionInWindow(); size = it.size }) {
+        if (hinge != null && fits && fold.horizontal) {
+            val topDp = with(density) { (hinge.top - origin.y).toDp() }
+            val gapDp = with(density) { hinge.height.toDp() }
+            Column(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxWidth().height(topDp).semantics { isTraversalGroup = true }) { firstPane() }
+                Spacer(Modifier.height(gapDp))
+                Box(Modifier.fillMaxWidth().weight(1f).semantics { isTraversalGroup = true }) { secondPane() }
+            }
+        } else if (hinge != null && fits) {
+            val startDp = with(density) { (hinge.left - origin.x).toDp() }
+            val gapDp = with(density) { hinge.width.toDp() }
+            Row(Modifier.fillMaxSize()) {
+                Box(Modifier.width(startDp).fillMaxHeight().semantics { isTraversalGroup = true }) { firstPane() }
+                Spacer(Modifier.width(gapDp))
+                Box(Modifier.weight(1f).fillMaxHeight().semantics { isTraversalGroup = true }) { secondPane() }
+            }
+        } else {
+            Row(Modifier.fillMaxSize()) {
+                Box(Modifier.weight(firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { firstPane() }
+                VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Box(Modifier.weight(1f - firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { secondPane() }
+            }
+        }
     }
 }
 
@@ -91,7 +158,7 @@ fun ScreenHeader(title: String, onBack: (() -> Unit)?, backLabel: String, modifi
                 Icon(AppIcons.Back, contentDescription = backLabel)
             }
         }
-        Text(title, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
+        Text(title, Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
@@ -112,7 +179,7 @@ fun SectionCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.
 fun SectionLabel(text: String, icon: ImageVector? = null, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (icon != null) Icon(icon, contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
+        Text(text, Modifier.semantics { heading() }, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
@@ -141,7 +208,7 @@ fun OptionCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(Modifier.height(34.dp), contentAlignment = Alignment.Center) { icon() }
+        Box(Modifier.heightIn(min = 34.dp), contentAlignment = Alignment.Center) { icon() }
         Text(
             label,
             style = MaterialTheme.typography.labelLarge,
@@ -187,7 +254,7 @@ fun StepProgress(titles: List<String>, current: Int, onStep: (Int) -> Unit, modi
                         reached -> colors.onSurface
                         else -> colors.onSurfaceVariant
                     },
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

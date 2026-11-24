@@ -14,6 +14,7 @@ kotlinx-datetime = "0.6.2"
 # --- androidx ---
 androidx-lifecycle = "2.10.0"
 androidx-activity = "1.13.0"
+androidx-window = "1.4.0"
 androidx-navigation-cmp = "1.1.1"
 androidx-core = "1.18.0"
 # Official SplashScreen API (Android 12 splash, backported to minSdk).
@@ -79,6 +80,7 @@ coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.r
 # --- androidx / compose ---
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
+androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-savedstate = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "androidx-lifecycle" }

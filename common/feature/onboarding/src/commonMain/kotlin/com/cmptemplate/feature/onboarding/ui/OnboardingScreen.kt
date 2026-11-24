@@ -34,6 +34,9 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cmptemplate.core.model.ThemeMode
@@ -116,18 +119,20 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
                     }
                 }
             }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            val back: @Composable () -> Unit = {
                 if (state.index > 0) {
                     OutlinedButton(onClick = { onAction(OnboardingAction.Back) }, Modifier.testTag("onboarding_back"), colors = brandOutlinedButtonColors()) {
                         Text(stringResource(Res.string.onb_back))
                     }
                 }
-                Spacer(Modifier.weight(1f))
+            }
+            val skip: @Composable () -> Unit = {
+                TextButton(onClick = { onAction(OnboardingAction.Skip) }, Modifier.testTag("onboarding_skip")) {
+                    Text(stringResource(Res.string.onb_skip))
+                }
+            }
+            val forward: @Composable () -> Unit = {
                 if (!state.isLast) {
-                    TextButton(onClick = { onAction(OnboardingAction.Skip) }, Modifier.testTag("onboarding_skip")) {
-                        Text(stringResource(Res.string.onb_skip))
-                    }
-                    Spacer(Modifier.width(8.dp))
                     Button(onClick = { onAction(OnboardingAction.Next) }, Modifier.testTag("onboarding_next")) {
                         Text(stringResource(Res.string.onb_next))
                     }
@@ -137,9 +142,30 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
                     }
                 }
             }
+            if (LocalDensity.current.fontScale >= LargeFontScale) {
+                // Large text: the three buttons would not fit one row; stack them, main action first.
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    forward()
+                    if (!state.isLast) skip()
+                    back()
+                }
+            } else {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    back()
+                    Spacer(Modifier.weight(1f))
+                    if (!state.isLast) {
+                        skip()
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    forward()
+                }
+            }
         }
     }
 }
+
+/** From this font scale the navigation buttons stack vertically. */
+private const val LargeFontScale = 1.5f
 
 /** Wide windows put the greeting on the left and the language/theme cards on the right. */
 @Composable
@@ -148,7 +174,7 @@ private fun WelcomeStep(locale: AppLocale, theme: ThemeMode, onLocale: (AppLocal
         AppMark(Modifier.align(Alignment.CenterHorizontally), size = 88.dp)
         Text(
             stringResource(Res.string.onb_welcome_title, stringResource(Res.string.app_name)),
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().semantics { heading() },
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
@@ -189,7 +215,7 @@ private val OnboardingMaxWidth = 960.dp
 /** Template step: replace with the product's own (keep the title + body + controls shape). */
 @Composable
 private fun AppStep() {
-    Text(stringResource(Res.string.onb_app_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+    Text(stringResource(Res.string.onb_app_title), Modifier.semantics { heading() }, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
     Text(stringResource(Res.string.onb_app_body), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
@@ -204,7 +230,7 @@ private fun ColumnScope.DoneStep() {
     )
     Text(
         stringResource(Res.string.onb_done_title),
-        Modifier.fillMaxWidth(),
+        Modifier.fillMaxWidth().semantics { heading() },
         style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onBackground,
