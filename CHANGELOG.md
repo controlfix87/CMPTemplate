@@ -5,6 +5,7 @@
 ## [Unreleased]
 
 ### Added
+- Device pass on Mac emulators (tablet, big phone, API 28 phone): launch, rotation, 200% font, dark, back, no crashes; recorded in docs/ANDROID-MODERNIZE.md (T1286)
 - Tabletop/deep-link already in place, tests green on Mac (T1254)
 - Two-pane example/settings/onboarding, tests added, dialog shot fix; unbuilt (T1234)
 - Two-pane layouts from 600dp (foldable inner screen, tablet, landscape): Example list+detail with persisted selection, settings categories+content, two-column onboarding welcome; Roborazzi shots for Fold inner and tablet; feedback dialog shot made idle-safe (T1234)
@@ -18,6 +19,7 @@
 - Brand-coloured outlined buttons, system back in onboarding, RTL/locale screenshots, device tests wait for first screen; validated on s8 and generated projects; reports worker can e-mail tickets (deploy pending owner OK) (T0996)
 
 ### Changed
+- Device pass on mac-tablet, mac-phone-big, mac-phone-small: no crash/ANR, rotation/font/dark/fold-size ok; only onboarding step 1 exercised (T1286)
 - Modernisation finished, recordRoborazzi green (T1244)
 - SDK/edge-to-edge already compliant; a11y semantics fixes pushed; unverified, awaiting combined round (T1218)
 - minSdk 28 (Android 9) instead of 26; CI device matrix API 28/35/37 (T1177)

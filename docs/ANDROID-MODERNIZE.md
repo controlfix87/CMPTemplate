@@ -38,3 +38,20 @@ Cause (reasoned, not run): the dialog window takes focus, the first text field g
 - Tabletop posture: already implemented in `TwoPane` (horizontal `FoldingFeature` via `LocalFoldingState`: list above, detail below; screenshot `example_two_pane_tabletop`). The Settings screen uses the same `TwoPane`, so it gets it too. Nothing to add.
 - Deep links: the app declares no deep-link intent filters (only MAIN/LAUNCHER). Every way to open an item (list tap, detail route, widening a compact detail) goes through `ExampleRoute.Detail`, which on a wide window renders the two-pane screen with the item selected (`state.selectedId ?: itemId`) and on a compact window the full-screen detail. A future deep link only needs to push `ExampleRoute.Detail(id)`; widening or narrowing keeps the selection (saved state).
 - ViewModel tests: `ExampleViewModelTest` (selection + query restore), `AboutViewModelTest` (category restore), `OnboardingViewModelTest` (step restore) cover every ViewModel touched in this modernisation.
+
+## Device pass
+
+Build 264a14c (debug APK built on the Mac), one pass on the Mac emulators: mac-tablet (API 36), mac-phone-big (API 36), mac-phone-small (API 28, minimum SDK).
+
+Checked, no failures:
+- Launch without crash or ANR on all three (logcat clean of FATAL/ANR; process alive afterwards).
+- Rotation 0/90/270 on the Welcome (onboarding) screen on all three: layout re-flows, no clipping; tablet and big phone use the two-column layout in landscape.
+- Tablet: window size override 1840x2208 and reset, font scale 2.0, dark mode toggle, back (leaves the app from the root screen).
+- Big phone: font scale 2.0 portrait and landscape; content scrolls above the fixed Next/Skip bar, nothing hidden under system bars.
+- Small phone (API 28): launch, rotation, back.
+- uiautomator: clickable nodes on the Welcome screen have labels and are at least 48dp, except unlabeled clipped scroll-region items at 2.0 font scale (partly off-screen, scrollable).
+- Device settings reset after each run (wm size/density, font scale, rotation, dark mode).
+
+Failed: none. Fixed: nothing needed.
+
+Not checked: screens beyond the first onboarding step (the pass never advanced past Welcome, so Setup, Done and the main app screens, two-pane selection state and the sign-in screens were not exercised). Small phone: font scale, dark mode and fold-size override were skipped by design.
