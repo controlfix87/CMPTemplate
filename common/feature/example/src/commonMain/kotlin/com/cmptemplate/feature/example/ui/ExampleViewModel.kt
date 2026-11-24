@@ -21,22 +21,24 @@ class ExampleViewModel(
     private val isLoading = MutableStateFlow(true)
     private val error = MutableStateFlow<DataError.Remote?>(null)
     private val query = savedStateHandle.getStateFlow("query", "")
+    private val selected = savedStateHandle.getStateFlow<String?>("selected", null)
     private var initialLoadStarted = false
     private var refreshJob: Job? = null
 
-    val state = combine(repository.observeItems(), isLoading, error, query) { items, loading, err, filter ->
-        ExampleState(items.filter { it.title.contains(filter, ignoreCase = true) }, loading, err, filter)
+    val state = combine(repository.observeItems(), isLoading, error, query, selected) { items, loading, err, filter, sel ->
+        ExampleState(items.filter { it.title.contains(filter, ignoreCase = true) }, loading, err, filter, sel)
     }.onStart {
         if (!initialLoadStarted) {
             initialLoadStarted = true
             refresh()
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ExampleState(query = query.value))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ExampleState(query = query.value, selectedId = selected.value))
 
     fun onAction(action: ExampleAction) {
         when (action) {
             ExampleAction.Retry -> refresh()
             is ExampleAction.QueryChanged -> savedStateHandle["query"] = action.query
+            is ExampleAction.Select -> savedStateHandle["selected"] = action.id
         }
     }
 

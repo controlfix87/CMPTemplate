@@ -15,4 +15,6 @@ data class ExampleState(
     val isLoading: Boolean = true,
     val error: DataError.Remote? = null,
     val query: String = "",
+    /** Item shown in the detail pane on wide windows; kept in SavedStateHandle so it survives rotation and fold changes. */
+    val selectedId: String? = null,
 )

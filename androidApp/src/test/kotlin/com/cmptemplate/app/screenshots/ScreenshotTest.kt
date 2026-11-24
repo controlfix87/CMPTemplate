@@ -25,6 +25,12 @@ import com.cmptemplate.feature.about.ui.AboutScreen
 import com.cmptemplate.feature.about.ui.AboutSheetContent
 import com.cmptemplate.feature.about.ui.FeedbackDialog
 import com.cmptemplate.feature.about.ui.FeedbackState
+import com.cmptemplate.feature.about.ui.SettingsCategory
+import com.cmptemplate.feature.example.ui.ExampleScreen
+import com.cmptemplate.feature.example.ui.ExampleState
+import com.cmptemplate.core.model.ExampleItem
+import android.os.Looper
+import org.robolectric.Shadows.shadowOf
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import com.cmptemplate.feature.onboarding.ui.OnboardingScreen // [onboarding]
@@ -46,6 +52,9 @@ import org.robolectric.annotation.GraphicsMode
 /** A phone in portrait and the Galaxy Z Fold's inner screen (GameController sizes). */
 private const val PHONE = "w411dp-h891dp-xxhdpi"
 private const val FOLD = "w882dp-h736dp-land-xhdpi"
+// Fold inner screen (portrait, ~w673dp-h841dp) and a landscape tablet: both are two-pane widths.
+private const val FOLD_INNER = "w673dp-h841dp-xhdpi"
+private const val TABLET = "w1280dp-h800dp-land-xhdpi"
 private const val DIR = "build/outputs/roborazzi"
 
 /**
@@ -142,15 +151,47 @@ class ScreenshotTest {
         AppLocaleProvider(AppLocale.Hebrew) { FeedbackDialog(bug = true, crashAt = null, onSend = {}, onDismiss = {}) }
     }
 
+    // Why not waitForIdle(): the dialog's window takes focus, which focuses its first text field,
+    // and a focused field runs an endless cursor-blink animation. The compose test clock treats a
+    // running animation as "busy", so waitForIdle() timed out ("Compose did not get idle"). With
+    // the clock paused we step it by hand: enough frames to compose and lay out the dialog window.
     @OptIn(ExperimentalRoborazziApi::class)
     private fun dialogShot(name: String, dark: Boolean = true, content: @Composable () -> Unit) {
+        compose.mainClock.autoAdvance = false
         compose.setContent { CMPTemplateTheme(darkTheme = dark) { content() } }
-        compose.waitForIdle()
+        shadowOf(Looper.getMainLooper()).idle()
+        compose.mainClock.advanceTimeBy(1_000)
+        shadowOf(Looper.getMainLooper()).idle()
         captureScreenRoboImage("$DIR/$name.png")
     }
 
+    // region two-pane (Example list + detail, settings categories, onboarding welcome)
+    private val items = (1..8).map { ExampleItem("$it", "Sample $it") }
+
+    @Test @Config(qualifiers = FOLD_INNER) fun exampleTwoPaneFold() = shot("example_two_pane_fold") {
+        ExampleScreen(ExampleState(items = items, isLoading = false, selectedId = "2"), onAction = {}, onDetail = {})
+    }
+
+    @Test @Config(qualifiers = TABLET) fun exampleTwoPaneTablet() = shot("example_two_pane_tablet") {
+        ExampleScreen(ExampleState(items = items, isLoading = false, selectedId = "3"), onAction = {}, onDetail = {})
+    }
+
+    @Test @Config(qualifiers = TABLET) fun exampleTwoPaneTabletNoSelection() = shot("example_two_pane_tablet_empty", dark = false) {
+        ExampleScreen(ExampleState(items = items, isLoading = false), onAction = {}, onDetail = {})
+    }
+
+    @Test @Config(qualifiers = FOLD_INNER) fun aboutTwoPaneFold() = shot("about_two_pane_fold") { AboutContent() }
+
+    @Test @Config(qualifiers = TABLET) fun aboutTwoPaneTablet() = shot("about_two_pane_tablet") { AboutContent(SettingsCategory.Theme) }
+
+    @Test @Config(qualifiers = TABLET) fun onboardingTablet() = shot("onboarding_welcome_tablet") {
+        OnboardingScreen(OnboardingState(OnboardingStep.WELCOME, AppLocale.English, ThemeMode.DARK)) {}
+    }
+    // endregion two-pane
+
     @Composable
-    private fun AboutContent() = AboutScreen(
+    private fun AboutContent(category: SettingsCategory = SettingsCategory.Language) = AboutScreen(
+        category = category,
         app = app, locale = AppLocale.English, theme = ThemeMode.SYSTEM, feedback = FeedbackState(),
         onLocale = {}, onTheme = {}, onFeedback = {}, onBack = {},
         onRunSetupAgain = {}, // [onboarding]

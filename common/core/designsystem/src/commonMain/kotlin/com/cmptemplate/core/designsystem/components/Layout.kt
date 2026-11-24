@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +51,32 @@ fun brandOutlinedButtonColors(): ButtonColors =
 
 /** Readable width for text and cards on tablets, unfolded foldables and desktop windows. */
 val ContentMaxWidth = 720.dp
+
+/**
+ * Window width from which list screens switch to two panes (list + detail): unfolded foldables,
+ * tablets, landscape phones and desktop windows. Narrower stays single-pane. Matches the Material
+ * "medium" window width class lower bound.
+ */
+val TwoPaneMinWidth = 600.dp
+
+/**
+ * Two side-by-side panes with a divider ([firstWeight] of the width for the list/master pane).
+ * Each pane is its own traversal group so TalkBack and keyboard focus finish one pane before the
+ * next; the Row mirrors in right-to-left locales. The caller supplies the insets and app bar.
+ */
+@Composable
+fun TwoPane(
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    firstWeight: Float = 0.4f,
+) {
+    Row(modifier) {
+        Box(Modifier.weight(firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { first() }
+        VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Box(Modifier.weight(1f - firstWeight).fillMaxHeight().semantics { isTraversalGroup = true }) { second() }
+    }
+}
 
 /** Screen title with a large (48dp) back button; [onBack] null = top-level screen, no button. */
 @Composable

@@ -18,6 +18,7 @@
     <string name="example_empty">אין פריטים תואמים</string>
     <string name="example_detail">פריט %1$s</string>
     <string name="example_back">חזרה</string>
+    <string name="example_select_hint">בחרו פריט כדי לראות את הפרטים</string>
 
     <string name="language">שפה</string>
     <string name="language_close">סגור</string>

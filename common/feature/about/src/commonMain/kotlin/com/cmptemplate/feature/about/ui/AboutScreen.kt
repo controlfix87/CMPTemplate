@@ -6,6 +6,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import com.cmptemplate.core.designsystem.components.TwoPane
+import com.cmptemplate.core.designsystem.components.TwoPaneMinWidth
+import com.cmptemplate.core.designsystem.generated.resources.language
+import com.cmptemplate.core.designsystem.generated.resources.theme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -77,6 +89,8 @@ fun AboutRoot(
         app = state.app,
         locale = state.locale,
         theme = state.theme,
+        category = state.category,
+        onCategory = { viewModel.onAction(AboutAction.SelectCategory(it)) },
         feedback = feedback,
         onLocale = { viewModel.onAction(AboutAction.SetLocale(it)) },
         onTheme = { viewModel.onAction(AboutAction.SetTheme(it)) },
@@ -104,6 +118,8 @@ fun AboutScreen(
     onBack: (() -> Unit)?,
     onRunSetupAgain: (() -> Unit)?,
     uriHandler: UriHandler = LocalUriHandler.current,
+    category: SettingsCategory = SettingsCategory.Language,
+    onCategory: (SettingsCategory) -> Unit = {},
 ) {
     var showAbout by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -129,25 +145,60 @@ fun AboutScreen(
     }
 
     Box(Modifier.fillMaxSize().testTag("about_screen").background(MaterialTheme.colorScheme.background)) {
-        Column(
-            Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(Modifier.fillMaxWidth().widthIn(max = ContentMaxWidth), verticalAlignment = Alignment.CenterVertically) {
-                ScreenHeader(stringResource(Res.string.about_settings), onBack, stringResource(Res.string.common_back), Modifier.weight(1f))
-                FeedbackMenu(onPick = { onFeedback(FeedbackAction.Open(it)) })
-                IconButton(onClick = { showAbout = true }, modifier = Modifier.testTag("about_open")) {
-                    Icon(AppIcons.Info, contentDescription = stringResource(Res.string.about_title), tint = MaterialTheme.colorScheme.onBackground)
+        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+            if (maxWidth >= TwoPaneMinWidth) {
+                // Wide window: one app bar on top, categories on the left, the chosen one on the right.
+                Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    SettingsHeader(onBack, onFeedback, onAbout = { showAbout = true }, Modifier.fillMaxWidth())
+                    TwoPane(
+                        first = {
+                            Column(
+                                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                CategoryRow(category == SettingsCategory.Language, AppIcons.Language, stringResource(Res.string.language), "category_language") {
+                                    onCategory(SettingsCategory.Language)
+                                }
+                                CategoryRow(category == SettingsCategory.Theme, AppIcons.ThemeAuto, stringResource(Res.string.theme), "category_theme") {
+                                    onCategory(SettingsCategory.Theme)
+                                }
+                                if (onRunSetupAgain != null) {
+                                    OutlinedButton(onClick = onRunSetupAgain, Modifier.testTag("about_run_setup"), colors = brandOutlinedButtonColors()) {
+                                        Text(stringResource(Res.string.about_run_setup))
+                                    }
+                                }
+                            }
+                        },
+                        second = {
+                            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 16.dp)) {
+                                SectionCard {
+                                    when (category) {
+                                        SettingsCategory.Language -> LanguageChoices(locale, onLocale)
+                                        SettingsCategory.Theme -> ThemeChoices(theme, onTheme)
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        firstWeight = 0.35f,
+                    )
                 }
-            }
+            } else {
+                Column(
+                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    SettingsHeader(onBack, onFeedback, onAbout = { showAbout = true }, Modifier.fillMaxWidth().widthIn(max = ContentMaxWidth))
 
-            SectionCard {
-                LanguageChoices(locale, onLocale)
-                ThemeChoices(theme, onTheme)
-                if (onRunSetupAgain != null) {
-                    OutlinedButton(onClick = onRunSetupAgain, Modifier.testTag("about_run_setup"), colors = brandOutlinedButtonColors()) {
-                        Text(stringResource(Res.string.about_run_setup))
+                    SectionCard {
+                        LanguageChoices(locale, onLocale)
+                        ThemeChoices(theme, onTheme)
+                        if (onRunSetupAgain != null) {
+                            OutlinedButton(onClick = onRunSetupAgain, Modifier.testTag("about_run_setup"), colors = brandOutlinedButtonColors()) {
+                                Text(stringResource(Res.string.about_run_setup))
+                            }
+                        }
                     }
                 }
             }
@@ -179,4 +230,36 @@ internal fun formatTime(epochMillis: Long): String {
     val t = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(TimeZone.currentSystemDefault())
     fun Int.two() = toString().padStart(2, '0')
     return "${t.year}-${t.monthNumber.two()}-${t.dayOfMonth.two()} ${t.hour.two()}:${t.minute.two()}"
+}
+
+/** Back, title, feedback menu and the "i" that opens About: one action bar for both layouts. */
+@Composable
+private fun SettingsHeader(onBack: (() -> Unit)?, onFeedback: (FeedbackAction) -> Unit, onAbout: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        ScreenHeader(stringResource(Res.string.about_settings), onBack, stringResource(Res.string.common_back), Modifier.weight(1f))
+        FeedbackMenu(onPick = { onFeedback(FeedbackAction.Open(it)) })
+        IconButton(onClick = onAbout, modifier = Modifier.testTag("about_open")) {
+            Icon(AppIcons.Info, contentDescription = stringResource(Res.string.about_title), tint = MaterialTheme.colorScheme.onBackground)
+        }
+    }
+}
+
+/** A selectable settings category (left pane on wide windows); at least 48dp tall. */
+@Composable
+private fun CategoryRow(selected: Boolean, icon: ImageVector, label: String, tag: String, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .background(if (selected) colors.secondaryContainer else Color.Transparent)
+            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(icon, contentDescription = null, Modifier.size(24.dp), tint = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant)
+        Text(label, style = MaterialTheme.typography.titleMedium, color = if (selected) colors.onSecondaryContainer else colors.onSurface)
+    }
 }

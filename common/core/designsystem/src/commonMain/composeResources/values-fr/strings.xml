@@ -11,6 +11,7 @@
     <string name="example_empty">Aucun élément correspondant</string>
     <string name="example_detail">Élément %1$s</string>
     <string name="example_back">Retour</string>
+    <string name="example_select_hint">Sélectionnez un élément pour voir ses détails</string>
 
     <string name="language">Langue</string>
     <string name="language_close">Fermer</string>

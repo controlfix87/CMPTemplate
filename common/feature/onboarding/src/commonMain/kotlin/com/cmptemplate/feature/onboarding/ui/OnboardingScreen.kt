@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -38,7 +39,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cmptemplate.core.model.ThemeMode
 import com.cmptemplate.core.designsystem.components.AppIcons
 import com.cmptemplate.core.designsystem.components.AppMark
-import com.cmptemplate.core.designsystem.components.ContentMaxWidth
 import com.cmptemplate.core.designsystem.components.LanguageChoices
 import com.cmptemplate.core.designsystem.components.StepProgress
 import com.cmptemplate.core.designsystem.components.brandOutlinedButtonColors
@@ -93,16 +93,16 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
         Modifier.fillMaxSize().testTag("onboarding").background(MaterialTheme.colorScheme.background).safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter,
     ) {
-        Column(Modifier.fillMaxSize().widthIn(max = ContentMaxWidth).padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Column(Modifier.fillMaxSize().widthIn(max = OnboardingMaxWidth).padding(horizontal = 24.dp, vertical = 16.dp)) {
             Text(
                 stringResource(Res.string.onb_step_of, state.index + 1, state.count),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             StepProgress(titles, state.index, onStep = { onAction(OnboardingAction.GoTo(it)) }, Modifier.padding(top = 4.dp))
-            AnimatedContent(targetState = state.step, modifier = Modifier.weight(1f), label = "onboarding") { step ->
+            AnimatedContent(targetState = state.step, modifier = Modifier.weight(1f), contentAlignment = Alignment.TopCenter, label = "onboarding") { step ->
                 Column(
-                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp),
+                    Modifier.fillMaxSize().then(if (step == OnboardingStep.WELCOME) Modifier else Modifier.widthIn(max = 720.dp)).verticalScroll(rememberScrollState()).padding(vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     when (step) {
@@ -141,26 +141,50 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
     }
 }
 
+/** Wide windows put the greeting on the left and the language/theme cards on the right. */
 @Composable
-private fun ColumnScope.WelcomeStep(locale: AppLocale, theme: ThemeMode, onLocale: (AppLocale) -> Unit, onTheme: (ThemeMode) -> Unit) {
-    AppMark(Modifier.align(Alignment.CenterHorizontally), size = 88.dp)
-    Text(
-        stringResource(Res.string.onb_welcome_title, stringResource(Res.string.app_name)),
-        Modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.headlineSmall,
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
-    Text(
-        stringResource(Res.string.onb_welcome_body),
-        Modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-    )
-    LanguageChoices(locale, onLocale)
-    ThemeChoices(theme, onTheme)
+private fun WelcomeStep(locale: AppLocale, theme: ThemeMode, onLocale: (AppLocale) -> Unit, onTheme: (ThemeMode) -> Unit) {
+    val intro: @Composable ColumnScope.() -> Unit = {
+        AppMark(Modifier.align(Alignment.CenterHorizontally), size = 88.dp)
+        Text(
+            stringResource(Res.string.onb_welcome_title, stringResource(Res.string.app_name)),
+            Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            stringResource(Res.string.onb_welcome_body),
+            Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+    val choices: @Composable ColumnScope.() -> Unit = {
+        LanguageChoices(locale, onLocale)
+        ThemeChoices(theme, onTheme)
+    }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (maxWidth >= WideWelcomeMinWidth) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp), content = intro)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp), content = choices)
+            }
+        } else {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                intro()
+                choices()
+            }
+        }
+    }
 }
+
+/** Below this the two columns would squeeze the language cards (a Fold inner screen stays single column). */
+private val WideWelcomeMinWidth = 720.dp
+
+/** Wider than the shared readable width so the two-column welcome has room on tablets. */
+private val OnboardingMaxWidth = 960.dp
 
 /** Template step: replace with the product's own (keep the title + body + controls shape). */
 @Composable

@@ -11,6 +11,7 @@
     <string name="example_empty">No matching items</string>
     <string name="example_detail">Item %1$s</string>
     <string name="example_back">Back</string>
+    <string name="example_select_hint">Select an item to see its details</string>
 
     <!-- Language picker. The languages themselves come from AppLocale.displayName as autonyms and
          are never translated per locale: someone hunting for their language in a list they cannot
