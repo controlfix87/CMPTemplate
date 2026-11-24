@@ -5,6 +5,7 @@
 ## [Unreleased]
 
 ### Added
+- Tabletop/deep-link already in place, tests green on Mac (T1254)
 - Two-pane example/settings/onboarding, tests added, dialog shot fix; unbuilt (T1234)
 - Two-pane layouts from 600dp (foldable inner screen, tablet, landscape): Example list+detail with persisted selection, settings categories+content, two-column onboarding welcome; Roborazzi shots for Fold inner and tablet; feedback dialog shot made idle-safe (T1234)
 - Merged audit/architecture-infrastructure into main (a152322; stricter boundary checks, verify.sh via gw, iOS CI path, audit docs; AGENTS.md left out); deleted dev + audit branches (local and remote); check_project + 15 script tests pass (T1136)
