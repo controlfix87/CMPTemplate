@@ -17,6 +17,7 @@
 - Brand-coloured outlined buttons, system back in onboarding, RTL/locale screenshots, device tests wait for first screen; validated on s8 and generated projects; reports worker can e-mail tickets (deploy pending owner OK) (T0996)
 
 ### Changed
+- Modernisation finished, recordRoborazzi green (T1244)
 - SDK/edge-to-edge already compliant; a11y semantics fixes pushed; unverified, awaiting combined round (T1218)
 - minSdk 28 (Android 9) instead of 26; CI device matrix API 28/35/37 (T1177)
 - Merged audit/architecture-infrastructure: layer import and nested-module boundary checks in check_project.py, verify.sh runs Gradle through the build queue when present, iOS CI derived-data path, audit docs (not copied into generated projects); AGENTS.md left out (T1136)
