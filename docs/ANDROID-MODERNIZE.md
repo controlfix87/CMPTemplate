@@ -32,3 +32,9 @@ Not done / limits:
 ## Feedback dialog screenshot tests (AppNotIdleException)
 
 Cause (reasoned, not run): the dialog window takes focus, the first text field gets focus, and its cursor blink is an endless animation; the compose test clock counts a running animation as busy, so `waitForIdle()` waits until its 60s limit. The About/onboarding/home shots have no focused field and pass. Fix is in the test only: `dialogShot` pauses the clock (`mainClock.autoAdvance = false`), idles the Robolectric looper and advances the clock by hand before capturing. Verify on the next Mac round.
+
+## Tabletop, cross-screen detail, ViewModel tests (check pass)
+
+- Tabletop posture: already implemented in `TwoPane` (horizontal `FoldingFeature` via `LocalFoldingState`: list above, detail below; screenshot `example_two_pane_tabletop`). The Settings screen uses the same `TwoPane`, so it gets it too. Nothing to add.
+- Deep links: the app declares no deep-link intent filters (only MAIN/LAUNCHER). Every way to open an item (list tap, detail route, widening a compact detail) goes through `ExampleRoute.Detail`, which on a wide window renders the two-pane screen with the item selected (`state.selectedId ?: itemId`) and on a compact window the full-screen detail. A future deep link only needs to push `ExampleRoute.Detail(id)`; widening or narrowing keeps the selection (saved state).
+- ViewModel tests: `ExampleViewModelTest` (selection + query restore), `AboutViewModelTest` (category restore), `OnboardingViewModelTest` (step restore) cover every ViewModel touched in this modernisation.
