@@ -55,3 +55,20 @@ Checked, no failures:
 Failed: none. Fixed: nothing needed.
 
 Not checked: screens beyond the first onboarding step (the pass never advanced past Welcome, so Setup, Done and the main app screens, two-pane selection state and the sign-in screens were not exercised). Small phone: font scale, dark mode and fold-size override were skipped by design.
+
+### Follow-up: past onboarding (build 4d49995, retest 79acf83)
+
+mac-phone-big (API 36), all passed on build 4d49995, no crash or ANR:
+- Onboarding Skip, then Run setup again and the full Next/Next/Start path.
+- Example: portrait detail screen, landscape two-pane with the item selected, portrait again, back; search query kept across rotation on the list; same process after rotations.
+- Settings: single pane in portrait, two panes in landscape, chosen category kept across rotation; About sheet and report dialog opened (nothing sent); back.
+- Font scale 2.0 and dark mode on the main screens; back from the root leaves the app. Settings restored afterwards.
+- 48dp/labels: only the Material sheet scrim ("Close sheet", 24dp strip) and rows clipped by a scroll edge were below 48dp.
+
+Fixed: in a widened detail route, an item picked in the pane was replaced by the route's item after rotation or a visit to Settings. Retest on 79acf83 passed (Settings and back, other landscape side, portrait and landscape again).
+
+Known limitation: a detail route has its own ViewModel, so when it is widened its list does not carry the search query of the list screen (the query is still there after going back).
+
+mac-tablet: failed to boot 3 times (the emulator loaded its snapshot but did not report boot completed within the queue's wait), so nothing was run on it and its auto-rotate setting was not touched.
+
+Not checked: everything tablet-only (portrait two-pane at tablet size, 1840x2208 override, tablet onboarding and Settings), process death on device, report sending, website and privacy links, anything server-backed (no test server or account; the template has no sign-in screen).

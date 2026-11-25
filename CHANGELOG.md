@@ -19,6 +19,7 @@
 - Brand-coloured outlined buttons, system back in onboarding, RTL/locale screenshots, device tests wait for first screen; validated on s8 and generated projects; reports worker can e-mail tickets (deploy pending owner OK) (T0996)
 
 ### Changed
+- Device checks on mac-phone-big pass (onboarding, two-pane, Settings); fixed pane selection reset in widened detail route; mac-tablet did not boot (T1312)
 - Device pass on mac-tablet, mac-phone-big, mac-phone-small: no crash/ANR, rotation/font/dark/fold-size ok; only onboarding step 1 exercised (T1286)
 - Modernisation finished, recordRoborazzi green (T1244)
 - SDK/edge-to-edge already compliant; a11y semantics fixes pushed; unverified, awaiting combined round (T1218)
