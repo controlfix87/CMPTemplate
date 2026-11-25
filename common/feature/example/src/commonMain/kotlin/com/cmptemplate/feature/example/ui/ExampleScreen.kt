@@ -179,8 +179,11 @@ fun ExampleDetailRoot(
 private fun ExampleDetailTwoPane(itemId: String, onDetail: (String) -> Unit, onAbout: () -> Unit, viewModel: ExampleViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     // This entry has its own ViewModel: take over the route's item once, then selections made in
-    // the pane update the same state.
-    LaunchedEffect(itemId) { viewModel.onAction(ExampleAction.Select(itemId)) }
+    // the pane update the same state. The effect runs again after rotation or on return to this
+    // entry, so it must not replace a selection that is already there.
+    LaunchedEffect(itemId) {
+        if (viewModel.state.value.selectedId == null) viewModel.onAction(ExampleAction.Select(itemId))
+    }
     ExampleScreen(state, viewModel::onAction, onDetail, onAbout, selectedId = state.selectedId ?: itemId)
 }
 
